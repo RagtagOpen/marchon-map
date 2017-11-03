@@ -2,6 +2,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #EE354E;
+  font-family: 'Roboto';
 }
 
 .content {
@@ -30,7 +31,7 @@ body {
 
 .social {
   margin-right: 10px;
-  font-size: 1.5em;
+  font-size: 1.2em;
 }
 
 ul {
@@ -42,14 +43,7 @@ ul {
   margin-bottom: 10px;
 }
 
-a .fa-facebook-official {
-  color: #3B5998;
-}
-a .fa-twitter-square {
-  color: #00aced;
-}
-
-a .fa-instagram {
+.social a {
   color:  #000;
 }
 
