@@ -5,6 +5,7 @@ const app = new Vue({
   data: {
     activeGroup: null,
     map: null,
+    popup: {},
   },
 
   mounted: function created() {
@@ -14,37 +15,49 @@ const app = new Vue({
       center: [-95, 40],
       zoom: 3,
     });
+    this.map.addControl(new mapboxgl.NavigationControl());
+    this.popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+    });
     this.map.on('load', () => {
-      this.map.on('click', e => this.showDetails(e));
+      this.map.on('click', 'marchon-sheet', e => this.showDetails(e));
       this.map.on('mousemove', 'marchon-sheet', _.throttle(e => this.showDetails(e), 100));
+      this.map.on('mouseenter', 'marchon-sheet', e => this.showPopup(e));
+      this.map.on('mouseleave', 'marchon-sheet', e => this.hidePopup(e));
     });
   },
 
   methods: {
     showDetails: function showDetails(e) {
-      const features = this.map.queryRenderedFeatures(e.point, {
-        layers: ['marchon-sheet'],
-      });
-
-      if (!features.length) {
+      if (!e.features || !e.features.length) {
         return;
       }
 
-      const props = features[0].properties;
+      const feature = e.features[0];
+      const props = feature.properties;
 
       props.mailto = `mailto:${props['contact email']}`;
       props.contactName = props['contact name'];
       this.activeGroup = props;
     },
-    // TODO: highlight active
-    /*
-    const popup = new mapboxgl.Popup({ offset: [0, -15] })
-      .setLngLat(feature.geometry.coordinates)
-      .setHTML('<h3>' + feature.properties.name + '</h3>')
-      .setLngLat(feature.geometry.coordinates)
-      .addTo(this.map);
+
+    showPopup: function showPopup(e) {
+      if (!e.features || !e.features.length) {
+        return;
+      }
+
+      const feature = e.features[0];
+
+      this.popup
+        .setLngLat(feature.geometry.coordinates)
+        .setHTML(`<b>${feature.properties.name}</b>`)
+        .addTo(this.map);
     },
-    */
+
+    hidePopup: function hidePopup() {
+      this.popup.remove();
+    },
   },
 });
 

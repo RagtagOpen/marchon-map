@@ -15,43 +15,43 @@
     <div id="app">
       <div id="map" class="content"></div>
       <div id="affiliate" class="content">
-        <div>
-          <template v-if="activeGroup">
-            <h3>{{activeGroup.name}}</h3>
-            <h4>{{activeGroup.location}}</h4>
-            <div class="social-links">
-              <span v-if="activeGroup.facebook" class="social">
-                <a :href="activeGroup.facebook">
-                  <i class="fa fa-facebook-official" aria-hidden="true"></i>
-                </a>
-              </span>
-              <span v-if="activeGroup.twitter" class="social">
-                <a :href="activeGroup.twitter">
-                  <i class="fa fa-twitter-square" aria-hidden="true"></i>
-                </a>
-              </span>
-              <span v-if="activeGroup.instagram" class="social">
-                <a :href="activeGroup.instagram">
-                  <i class="fa fa-instagram" aria-hidden="true"></i>
-                </a>
-              </span>
-            </div>
-            <div class="photo">
-              <img src="https://rosecdc.org/wp-content/uploads/2014/01/faceholder-group.png" class="img-thumbnail">
-            </div>
-            <ul>
-              <li>
-                Contact: <a :href="activeGroup.mailto">{{activeGroup.contactName}}</a>
-              </li>
-              <li v-if="activeGroup.website">
-                Website: <a :href="activeGroup.website">{{activeGroup.website}}</a>
-              </li>
-              <li v-if="activeGroup.other">
-                <i class="fa fa-other" aria-hidden="true"></i>
-                <a :href="activeGroup.other">{{activeGroup.other}}</a>
-              </li>
-            </ul>
-          </template>
+        <div v-if="activeGroup">
+          <h3>{{activeGroup.name}}</h3>
+          <h4>{{activeGroup.location}}</h4>
+          <div class="social-links">
+            <span v-if="activeGroup.facebook" class="social">
+              <a :href="activeGroup.facebook">
+                <i class="fa fa-facebook-official" aria-hidden="true"></i>
+              </a>
+            </span>
+            <span v-if="activeGroup.twitter" class="social">
+              <a :href="activeGroup.twitter">
+                <i class="fa fa-twitter-square" aria-hidden="true"></i>
+              </a>
+            </span>
+            <span v-if="activeGroup.instagram" class="social">
+              <a :href="activeGroup.instagram">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+              </a>
+            </span>
+          </div>
+          <div class="photo">
+            <img src="https://rosecdc.org/wp-content/uploads/2014/01/faceholder-group.png" class="img-thumbnail">
+          </div>
+          <ul>
+            <li>
+              Contact: <a :href="activeGroup.mailto">{{activeGroup.contactName}}</a>
+            </li>
+            <li v-if="activeGroup.website">
+              Website: <a :href="activeGroup.website">{{activeGroup.website}}</a>
+            </li>
+            <li v-if="activeGroup.other">
+              <a :href="activeGroup.other">{{activeGroup.other}}</a>
+            </li>
+          </ul>
+        </div>
+        <div v-else>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         </div>
       </div>
     </div>
