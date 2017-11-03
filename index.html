@@ -3,13 +3,58 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <!-- mapbox -->
     <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js"></script>
     <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
   </head>
   <body>
-    <div id="map"></div>
-    <!-- map -->
+    <div id="app">
+      <div id="map" class="content"></div>
+      <div id="affiliate" class="content">
+        <div>
+          <template v-if="activeGroup">
+            <h3>{{activeGroup.name}}</h3>
+            <h4>{{activeGroup.location}}</h4>
+            <div class="social-links">
+              <span v-if="activeGroup.facebook" class="social">
+                <a :href="activeGroup.facebook">
+                  <i class="fa fa-facebook-official" aria-hidden="true"></i>
+                </a>
+              </span>
+              <span v-if="activeGroup.twitter" class="social">
+                <a :href="activeGroup.twitter">
+                  <i class="fa fa-twitter-square" aria-hidden="true"></i>
+                </a>
+              </span>
+              <span v-if="activeGroup.instagram" class="social">
+                <a :href="activeGroup.instagram">
+                  <i class="fa fa-instagram" aria-hidden="true"></i>
+                </a>
+              </span>
+            </div>
+            <div class="photo">
+              <img src="https://rosecdc.org/wp-content/uploads/2014/01/faceholder-group.png" class="img-thumbnail">
+            </div>
+            <ul>
+              <li>
+                Contact: <a :href="activeGroup.mailto">{{activeGroup.contactName}}</a>
+              </li>
+              <li v-if="activeGroup.website">
+                Website: <a :href="activeGroup.website">{{activeGroup.website}}</a>
+              </li>
+              <li v-if="activeGroup.other">
+                <i class="fa fa-other" aria-hidden="true"></i>
+                <a :href="activeGroup.other">{{activeGroup.other}}</a>
+              </li>
+            </ul>
+          </template>
+        </div>
+      </div>
+    </div>
     <link href="map.css" rel="stylesheet" />
     <script src="map.js" id="mapjs" data-token="pk.eyJ1IjoibWFyY2gtb24iLCJhIjoiY2o5N3JkMGE2MDM2aTJxcGFwYXQ4MnNkNiJ9.S51iIlKgalNz3Usq_1_yCQ"></script>
   </body>
