@@ -8,6 +8,7 @@ const app = new Vue({
     popup: {},
     userLocation: null,
     mapLoaded: false,
+    userMarker: null,
   },
 
   created: function created() {
@@ -75,6 +76,17 @@ const app = new Vue({
         [Math.max(loc.longitude, featureLoc[0]), Math.max(loc.latitude, featureLoc[1])],
       ],
       { maxZoom: 15, padding: 50 });
+
+      if (!this.userMarker) {
+        const el = document.getElementById('userMarker');
+
+        el.style.display = 'block';
+        this.userMarker = new mapboxgl.Marker(el)
+          .setLngLat([loc.longitude, loc.latitude])
+          .addTo(this.map);
+      } else {
+          this.userMarker.setLngLat([loc.longitude, loc.latitude]);
+      }
       this.showFeature(closest.feature);
       this.showPopup(closest.feature);
     },
