@@ -9,6 +9,7 @@ const app = new Vue({
     userLocation: null,
     mapLoaded: false,
     userMarker: null,
+    features: [],
   },
 
   created: function created() {
@@ -22,7 +23,7 @@ const app = new Vue({
   mounted: function mounted() {
     this.map = new mapboxgl.Map({
       container: 'map',
-      style: 'mapbox://styles/march-on/cj95y50am1fbj2rqhogye1lu5',
+      style: 'mapbox://styles/march-on/cj9nq97bw3oco2snohkuh423m',
       center: [-95, 40],
       zoom: 3,
     });
@@ -33,19 +34,36 @@ const app = new Vue({
     });
     this.geocoder = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
+      flyTo: false,
       country: 'us,ca',
     });
     this.map.addControl(this.geocoder);
-    this.geocoder.on('result', (r) => {
+    this.geocoder.on('result', _.throttle((r) => {
       if (r.result && r.result.center) {
         this.userLocation = {
           latitude: r.result.center[1],
           longitude: r.result.center[0],
         };
       }
-    });
+    }, 100));
     this.map.on('load', () => {
+      this.map.addSource('marchon-sheet', {
+        type: 'geojson',
+        data: 'https://s3.amazonaws.com/ragtag-marchon/affiliates.json',
+      });
+      this.map.addLayer({
+        id: 'marchon-sheet',
+        type: 'symbol',
+        source: 'marchon-sheet',
+        layout: { 'icon-image': 'star-15' },
+      });
       this.mapLoaded = true;
+      this.map.on('sourcedata', 'marchon-sheet', (e) => {
+        if (!e.isSourceLoaded || e.features.length < this.features.length) {
+          return;
+        }
+        this.features = e.features;
+      });
       this.map.on('click', 'marchon-sheet', e => this.showFeature(e.features[0]));
       this.map.on('mousemove', 'marchon-sheet', _.throttle(e => this.showFeature(e.features[0]), 100));
       this.map.on('mouseenter', 'marchon-sheet', e => this.showPopup(e.features[0]));
@@ -69,14 +87,19 @@ const app = new Vue({
 
   methods: {
     zoomToClosest() {
-      const features = this.map.queryRenderedFeatures({ layers: ['marchon-sheet'] });
+      if (!this.features.length) {
+        return;
+      }
       const loc = this.userLocation;
-      const withDistance = features.map((feature) => {
+      const withDistance = this.features.map((feature) => {
         const coords = feature.geometry.coordinates;
+        const distance = this.distance(loc.latitude, loc.longitude, coords[1], coords[0]);
+
+        console.log(`${feature.properties.name} = ${distance}km`);
 
         return {
           feature,
-          distance: this.distance(loc.latitude, loc.longitude, coords[1], coords[0]),
+          distance,
         };
       });
       const closest = _.minBy(withDistance, d => d.distance);
@@ -88,7 +111,7 @@ const app = new Vue({
         // ne
         [Math.max(loc.longitude, featureLoc[0]), Math.max(loc.latitude, featureLoc[1])],
       ],
-      { maxZoom: 15, padding: 70 });
+      { maxZoom: 15, padding: 100 });
 
       if (!this.userMarker) {
         const el = document.getElementById('userMarker');
