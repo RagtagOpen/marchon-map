@@ -26,10 +26,23 @@ const app = new Vue({
       center: [-95, 40],
       zoom: 3,
     });
-    this.map.addControl(new mapboxgl.NavigationControl());
+    this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
     this.popup = new mapboxgl.Popup({
       closeButton: false,
       closeOnClick: false,
+    });
+    this.geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      country: 'us,ca',
+    });
+    this.map.addControl(this.geocoder);
+    this.geocoder.on('result', (r) => {
+      if (r.result && r.result.center) {
+        this.userLocation = {
+          latitude: r.result.center[1],
+          longitude: r.result.center[0],
+        };
+      }
     });
     this.map.on('load', () => {
       this.mapLoaded = true;
@@ -75,7 +88,7 @@ const app = new Vue({
         // ne
         [Math.max(loc.longitude, featureLoc[0]), Math.max(loc.latitude, featureLoc[1])],
       ],
-      { maxZoom: 15, padding: 50 });
+      { maxZoom: 15, padding: 70 });
 
       if (!this.userMarker) {
         const el = document.getElementById('userMarker');
@@ -85,7 +98,7 @@ const app = new Vue({
           .setLngLat([loc.longitude, loc.latitude])
           .addTo(this.map);
       } else {
-          this.userMarker.setLngLat([loc.longitude, loc.latitude]);
+        this.userMarker.setLngLat([loc.longitude, loc.latitude]);
       }
       this.showFeature(closest.feature);
       this.showPopup(closest.feature);
