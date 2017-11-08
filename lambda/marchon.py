@@ -1,11 +1,19 @@
+from datetime import datetime, timedelta
 import json
 import os
 
 from apiclient.discovery import build
-from mapbox import Datasets, Geocoder
+import boto3
+from mapbox import Geocoder
+import requests
 
 def get_sheet_data():
-    service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'])
+    try:
+        service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'])
+    except:
+        # throws errors about file_cache is unavailable when using oauth2client
+        # but seems to work fine
+        pass
     result = service.spreadsheets().values().get(
         spreadsheetId=os.environ['SHEET_ID'], range='Sheet1!A1:N').execute()
     values = result.get('values', [])
@@ -33,14 +41,17 @@ def get_sheet_data():
             rows[row[location]] = {'properties': props}
         else:
             print('WARNING\tskipping %s: no location' % (props['name']))
+    print('read %s rows from sheet' % (len(rows)))
     return rows
 
 
 def get_dataset():
-    datasets = Datasets(access_token=os.environ['MAPBOX_ACCESS_TOKEN'])
+    resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/affiliates.json')
     features = {}
-    for feature in datasets.list_features(os.environ['DATASET_ID']).json()['features']:
-        features[feature['id']] = feature
+    for feature in resp.json()['features']:
+        print('feature=%s' % feature)
+        features[feature['properties']['location']] = feature
+    print('read %s features' % (len(features)))
     return features
 
 
@@ -48,7 +59,9 @@ def get_geodata(sheet, keys):
     # in spreadsheet but not GeoJSON
     geocoder = Geocoder()
     for key in keys:
-        response = geocoder.forward(key, limit=1).geojson()
+        # San Jose, CA doesn't return results
+        response = geocoder.forward(key.replace(', CA', ', California'),
+            limit=1, country=['us', 'ca']).geojson()
         if 'features' in response and response['features']:
             feature = response['features'][0]
             print('geocode %s\n\t%s' % (key, feature))
@@ -57,12 +70,12 @@ def get_geodata(sheet, keys):
                 continue
             sheet[key]['geometry'] = response['features'][0]['geometry']
         else:
+            if key in sheet:
+                del sheet[key]
             print('WARNING\terror geocoding %s' % (key))
 
 
 def merge_data(sheet, dataset):
-    datasets = Datasets(access_token=os.environ['MAPBOX_ACCESS_TOKEN'])
-    ds_id = os.environ['DATASET_ID']
     for key in sheet:
         row = sheet[key]
         if key in dataset and row['properties'] == dataset[key]['properties']:
@@ -74,29 +87,43 @@ def merge_data(sheet, dataset):
         else:
             dataset[key] = row
         dataset[key]['type'] = 'Feature'
-        print('\t%s' % datasets.update_feature(ds_id, key, dataset[key]).json())
+        if not dataset[key].get('geometry', None):
+            del dataset[key]
 
-
-def delete_orphans(sheet, dataset):
-    datasets = Datasets(access_token=os.environ['MAPBOX_ACCESS_TOKEN'])
-    ds_id = os.environ['DATASET_ID']
+    orphans = []
     for key in dataset:
         feature = dataset[key]
         if feature.get('source') != 'sheet':
             continue
-        # if in dataset but not sheet
-        if key not in sheet:
-            print('deleting %s: in dataset but not sheet')
-        print('\t%s' % datasets.delete_feature(ds_id, key).json())
+        if key in sheet:
+            continue
+        orphans.append(key)
+    for key in orphans:
+        del dataset[key]
+
+    return dataset
+
+
+def upload(dataset):
+    data = {
+        'type': 'FeatureCollection',
+        'features': [dataset[key] for key in dataset]
+    }
+    s3 = boto3.resource('s3')
+    print(s3.Object('ragtag-marchon', 'affiliates.json').put(
+        Body=json.dumps(data, indent=2),
+        ContentType='application/json',
+        ACL='public-read',
+        Expires=(datetime.now() + timedelta(hours=6))
+    ))
 
 
 def lambda_handler(event=None, context=None):
     sheet = get_sheet_data()
-    print('read %s rows from sheet' % (len(sheet)))
     dataset = get_dataset()
     print('read %s features from dataset' % (len(dataset)))
     keys = sheet.keys() - dataset.keys()
     if keys:
         get_geodata(sheet, keys)
     merge_data(sheet, dataset)
-    delete_orphans(sheet, dataset)
+    upload(dataset)
