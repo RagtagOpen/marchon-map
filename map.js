@@ -55,7 +55,7 @@ const app = new Vue({
         id: 'marchon-sheet',
         type: 'symbol',
         source: 'marchon-sheet',
-        layout: { 'icon-image': 'star-15' },
+        layout: { 'icon-image': 'smallstar' },
       });
       this.mapLoaded = true;
       this.map.on('sourcedata', 'marchon-sheet', (e) => {
