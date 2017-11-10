@@ -13,6 +13,10 @@ Mapbox GL JS doesn't allow access to the entire feature set, only features in th
   - geocode locations with Mapbox's Geocoder API
   - write GeoJSON to S3
 
+### deploying to AWS Lambda
+
+The image resizing code uses [Pillow](https://github.com/python-pillow/Pillow), which contains platform-specific C code. When deploying, make sure you include the Linux version in the zip file. The easiest way to do this is to create the deployment package on Linux; [get a Docker container](https://medium.freecodecamp.org/escaping-lambda-function-hell-using-docker-40b187ec1e48) if you don't have access to a Linux box. Alternatively, you can `pip install Pillow -t linux-pillow` on Linux, then copy the resulting packages into the zip. You can do this just once, then freshen `marchon.py` as needed.
+
 ## GeoJSON to map
 
 [map.js](https://github.com/RagtagOpen/marchon-map/blob/master/map.js) uses Vue.js and Mapbox GL JS to create the map.
