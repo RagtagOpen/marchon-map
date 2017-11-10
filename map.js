@@ -143,8 +143,7 @@ const app = new Vue({
     showFeature: function showFeature(feature) {
       const props = feature.properties;
 
-      props.mailto = `mailto:${props['contact email']}`;
-      props.contactName = props['contact name'];
+      props.mailto = `mailto:${props['contactEmail']}`;
       this.activeGroup = props;
     },
 

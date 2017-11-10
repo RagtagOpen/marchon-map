@@ -37,8 +37,8 @@
               </a>
             </span>
           </div>
-          <div class="photo">
-            <img src="https://rosecdc.org/wp-content/uploads/2014/01/faceholder-group.png" class="img-thumbnail">
+          <div v-if="activeGroup.photoUrl" class="photo">
+            <img :src="activeGroup.photoUrl" class="img-thumbnail">
           </div>
           <ul>
             <li>
