@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
+import io
 import json
 import os
+import traceback
 
 from apiclient.discovery import build
 import boto3
 from mapbox import Geocoder
+from PIL import Image
 import requests
 
 def get_sheet_data():
@@ -15,21 +18,25 @@ def get_sheet_data():
         # but seems to work fine
         pass
     result = service.spreadsheets().values().get(
-        spreadsheetId=os.environ['SHEET_ID'], range='Sheet1!A1:N').execute()
+        spreadsheetId=os.environ['SHEET_ID'], range='Sheet1!A1:R').execute()
     values = result.get('values', [])
     # 0 Group Name (as shown on website/docs), 1 Location, 2 Form filled out,
     # 3 Main contact name, 4 Title, 5 Main contact info, 6 Secondary contact info
     # 7 Third contact, 8 Org Status, 9 Facebook, 10 Twitter, 11 Insta,
-    # 12 Other social link, Website
+    # 12 Other social link, 13 Website, 14 Upcoming event, 15 Event date
+    # 16 Event Link, 17 Photo
     # keep these fields
-    fields = {'name': 0, 'location': 1, 'contact name': 3, 'contact email': 5,
-              'facebook': 9, 'twitter': 10, 'instagram': 11, 'other': 12, 'website': 13}
+    fields = {'name': 0, 'location': 1, 'contactName': 3, 'contactEmail': 5,
+              'facebook': 9, 'twitter': 10, 'instagram': 11, 'other': 12,
+              'website': 13, 'event': 14, 'eventDate': 15, 'eventLink': 16,
+              'photo': 17}
     location = 1
     rows = {}
     empty = {}
     for field in fields:
         empty[field] = ''
     for row in values[1:]:
+        print(row)
         props = {'source': 'sheet'}
         props.update(empty)
         for field in fields:
@@ -118,6 +125,67 @@ def upload(dataset):
     ))
 
 
+def resize_photo(service, file):
+    print('resizing %s' % file['name'])
+    width = 600
+    file_ext = file['mimeType'].split('/')[1]
+    filename = '%s.%s' % (file['id'], file_ext.lower())
+    data = service.files().get_media(fileId=file['id']).execute()
+    img = Image.open(io.BytesIO(data))
+    pct = width / float(img.size[0])
+    height = int((float(img.size[1]) * float(pct)))
+    resized = img.resize((width, height), Image.ANTIALIAS)
+    img_bytes= io.BytesIO()
+    resized.save(img_bytes, format=file_ext.upper())
+    img_bytes.seek(0)
+    s3 = boto3.resource('s3')
+    print(s3.Object('ragtag-marchon', filename).put(
+        Body=img_bytes.read(),
+        ContentType=file['mimeType'],
+        ACL='public-read',
+        Expires=(datetime.now() + timedelta(hours=24*7))
+    ))
+    return filename
+
+
+def update_photos(dataset):
+    # map filename to affiliate key
+    photos = {}
+    for key in dataset:
+        props = dataset[key]['properties']
+        if not props.get('photo', None):
+            props['photoUrl'] = None
+            continue
+        photos[props['photo']] = key
+    try:
+        service = build('drive', 'v3', developerKey=os.environ['GOOGLE_API_KEY'])
+    except:
+        # throws errors about file_cache is unavailable when using oauth2client
+        # but seems to work fine
+        pass
+    query = '"%s" in parents' % os.environ['PHOTO_FOLDER_ID']
+    '''
+    array of
+    {'kind': 'drive#file', 'id': 'abc', 'name': 'photo.jpg', 'mimeType': 'image/jpeg'}
+    '''
+    file_list = service.files().list(pageSize=1000, q=query).execute()['files']
+    for photo in file_list:
+        key = photos.get(photo['name'], None)
+        if not key:
+            print('%s not referenced from dataset' % photo['name'])
+            continue
+        if dataset[key]['properties'].get('photoUrl', None):
+            print('%s already has url' % (photo['name']))
+            continue
+        try:
+            url = 'https://s3.amazonaws.com/ragtag-marchon/%s' % resize_photo(service, photo)
+            print('%s saved to %s' % (photo['name'], url))
+            dataset[key]['properties']['photoUrl'] = url
+        except:
+            print('ERROR resizing photo')
+            traceback.print_exc()
+
+
 def lambda_handler(event=None, context=None):
     sheet = get_sheet_data()
     dataset = get_dataset()
@@ -126,4 +194,5 @@ def lambda_handler(event=None, context=None):
     if keys:
         get_geodata(sheet, keys)
     merge_data(sheet, dataset)
+    update_photos(dataset)
     upload(dataset)
