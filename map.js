@@ -67,7 +67,11 @@ const app = new Vue({
       this.map.on('click', 'marchon-sheet', e => this.showFeature(e.features[0]));
       this.map.on('mousemove', 'marchon-sheet', _.throttle(e => this.showFeature(e.features[0]), 100));
       this.map.on('mouseenter', 'marchon-sheet', e => this.showPopup(e.features[0]));
-      this.map.on('mouseleave', 'marchon-sheet', e => this.hidePopup(e.features[0]));
+      this.map.on('mouseleave', 'marchon-sheet', (e) => {
+        if (e.features && e.features.length) {
+          this.hidePopup(e.features[0]);
+        }
+      });
     });
   },
 
@@ -143,7 +147,15 @@ const app = new Vue({
     showFeature: function showFeature(feature) {
       const props = feature.properties;
 
-      props.mailto = `mailto:${props['contactEmail']}`;
+      props.mailto = `mailto:${props.contactEmail}`;
+      if (props.eventDate && props.eventDate.length) {
+        const dt = moment(props.eventDate, 'MM/DD/YYYY');
+
+        props.eventYmd = dt.format('YYYY-MM-DD');
+        props.eventWeekday = dt.format('dddd');
+        props.eventMonth = dt.format('MMMM');
+        props.eventDay = dt.format('D');
+      }
       this.activeGroup = props;
     },
 

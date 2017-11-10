@@ -10,7 +10,7 @@ body {
 }
 
 #map {
-  width: 70%;
+  width: 65%;
   position: absolute;
   top: 10px;
   left: 10px;
@@ -19,24 +19,20 @@ body {
 }
 
 #affiliate {
+  overflow: hidden;
   position: absolute;
   top: 10px;
-  left: 72%;
+  left: 67%;
   right: 10px;
   bottom: 10px;
   height: 96%;
   background-color: #F5E9C9;
-  padding: 15px;
+  padding: 10px;
 }
 
 .social {
   margin-right: 10px;
   font-size: 1.2em;
-}
-
-ul {
-  margin: 0;
-  padding-left: 20px;
 }
 
 .photo, .social-links {
@@ -59,4 +55,68 @@ h3 {
 
 #userMarker {
   color: #1BAC9E;
+}
+
+.event {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.event-date, .event-title {
+  align-self: flex-start;
+}
+
+.event-title {
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-left: 15px;
+}
+
+.website {
+  font-size: 0.9em;
+}
+/* https://www.sitepoint.com/create-calendar-icon-html5-css3/ */
+time.icon
+{
+  font-size: 0.7em;
+  display: block;
+  position: relative;
+  width: 6em;
+  height: 6em;
+  background-color: #fff;
+  border-radius: 0.6em;
+  box-shadow: 0 1px 0 #bdbdbd, 0 2px 0 #fff, 0 3px 0 #bdbdbd;
+  overflow: hidden;
+}
+
+time.icon * {
+  display: block;
+  width: 100%;
+  font-size: 1em;
+  font-style: normal;
+  text-align: center;
+}
+
+time.icon .event-month {
+  position: absolute;
+  top: 0;
+  padding: 0.4em 0;
+  color: #fff;
+  background-color: #EE354E;
+  border-bottom: 1px dashed #fff;
+  box-shadow: 0 2px 0 #EE354E;
+}
+
+time.icon .event-weekday {
+  position: absolute;
+  bottom: 0.3em;
+  color: #EE354E;
+}
+
+time.icon .event-date {
+  font-size: 1.6em;
+  letter-spacing: -0.05em;
+  padding-top: 1.6em;
+  color: #2f2f2f;
+  font-weight: bold;
 }

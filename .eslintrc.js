@@ -19,6 +19,7 @@ module.exports = {
     Vue: false,
     _: false,
     MapboxGeocoder: false,
+    moment: false,
   },
   rules: {
     'array-callback-return': 0,

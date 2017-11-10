@@ -8,7 +8,7 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.1/mapbox-gl-geocoder.min.js"></script>
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.1/mapbox-gl-geocoder.css" type="text/css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
@@ -40,17 +40,27 @@
           <div v-if="activeGroup.photoUrl" class="photo">
             <img :src="activeGroup.photoUrl" class="img-thumbnail">
           </div>
-          <ul>
-            <li>
-              Contact: <a :href="activeGroup.mailto">{{activeGroup.contactName}}</a>
-            </li>
-            <li v-if="activeGroup.website">
-              Website: <a :href="activeGroup.website">{{activeGroup.website}}</a>
-            </li>
-            <li v-if="activeGroup.other">
-              <a :href="activeGroup.other">{{activeGroup.other}}</a>
-            </li>
-          </ul>
+          <div v-if="activeGroup.event" class="event">
+            <div class="event-date">
+              <time :datetime="activeGroup.eventYmd" class="icon">
+                <span class="event-weekday">{{activeGroup.eventWeekday}}</span>
+                <span class="event-month">{{activeGroup.eventMonth}}</span>
+                <span class="event-date">{{activeGroup.eventDay}}</span>
+              </time>
+            </div>
+            <div class="event-title">
+              <a :href="activeGroup.eventLink">{{activeGroup.event}}</a>
+            </div>
+          </div>
+          <div class="contact">
+            Contact: <a :href="activeGroup.mailto">{{activeGroup.contactName}}</a>
+          </div>
+          <div v-if="activeGroup.website">
+            Website: <a class="website" :href="activeGroup.website">{{activeGroup.website}}</a>
+          </div>
+          <div v-if="activeGroup.other">
+            Other: <a class="website" :href="activeGroup.other">{{activeGroup.other}}</a>
+          </div>
         </div>
         <div v-else>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
@@ -61,6 +71,7 @@
       </div>
     </div>
     <link rel="stylesheet" id="vc_google_fonts_roboto100100italic300300italicregularitalic500500italic700700italic900900italic-css" href="//fonts.googleapis.com/css?family=Roboto%3A100%2C100italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic" type="text/css" media="all">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
     <link href="map.css" rel="stylesheet" />
     <script src="map.js" id="mapjs" data-token="pk.eyJ1IjoibWFyY2gtb24iLCJhIjoiY2o5N3JkMGE2MDM2aTJxcGFwYXQ4MnNkNiJ9.S51iIlKgalNz3Usq_1_yCQ"></script>
   </body>
