@@ -19,7 +19,8 @@ body {
 }
 
 #affiliate {
-  overflow: hidden;
+  overflow-y: scroll;
+  overflow-x: hidden;
   position: absolute;
   top: 10px;
   left: 67%;
