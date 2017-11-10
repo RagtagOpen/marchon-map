@@ -154,7 +154,7 @@ def update_photos(dataset):
     for key in dataset:
         props = dataset[key]['properties']
         if not props.get('photo', None):
-            props['photoUrl'] = None
+            props['photoUrl'] = ''
             continue
         photos[props['photo']] = key
     try:
