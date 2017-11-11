@@ -14,25 +14,25 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
   </head>
-  <body>
-    <div id="app">
+  <body class="ragtag-marchon-map">
+    <div id="mapApp">
       <div id="map" class="content"></div>
       <div id="affiliate" class="content">
         <div v-if="activeGroup">
           <h3>{{activeGroup.name}}</h3>
           <h4>{{activeGroup.location}}</h4>
           <div class="social-links">
-            <span v-if="activeGroup.facebook" class="social">
+            <span v-if="activeGroup.facebook" class="social-link">
               <a :href="activeGroup.facebook">
                 <i class="fa fa-facebook" aria-hidden="true"></i>
               </a>
             </span>
-            <span v-if="activeGroup.twitter" class="social">
+            <span v-if="activeGroup.twitter" class="social-link">
               <a :href="activeGroup.twitter">
                 <i class="fa fa-twitter" aria-hidden="true"></i>
               </a>
             </span>
-            <span v-if="activeGroup.instagram" class="social">
+            <span v-if="activeGroup.instagram" class="social-link">
               <a :href="activeGroup.instagram">
                 <i class="fa fa-instagram" aria-hidden="true"></i>
               </a>
@@ -80,7 +80,7 @@
             </li>
           </ul>
         </div>
-        <div id="userMarker" style="display:none">
+        <div id="userMarker">
           <i class="fa fa-circle"></i>
         </div>
       </div>

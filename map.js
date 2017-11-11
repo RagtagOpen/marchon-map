@@ -2,7 +2,7 @@ mapboxgl.accessToken = document.getElementById('mapjs').getAttribute('data-token
 const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/affiliates.json');
 
 const app = new Vue({
-  el: '#app',
+  el: '#mapApp',
   data: {
     activeGroup: null,
     map: null,

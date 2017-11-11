@@ -6,53 +6,46 @@ body {
 }
 
 .content {
-  border-radius: 4px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
 }
 
 #map {
   width: 65%;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
+  left: 0px;
 }
 
 #affiliate {
   overflow-y: auto;
   overflow-x: hidden;
-  position: absolute;
-  top: 10px;
-  left: 67%;
-  right: 10px;
-  bottom: 10px;
-  height: 96%;
+  left: 66%;
+  height: 100%;
   background-color: #F5E9C9;
   padding: 10px;
   display: none;
 }
 
-.social {
+.social-link {
   margin-right: 10px;
   font-size: 1.2em;
+  color:  #000;
 }
 
 .photo, .social-links {
   margin-bottom: 10px;
 }
 
-.social a {
-  color:  #000;
-}
-
 .img-thumbnail {
+  max-height: 150px;
   background-color: #000;
   border: 3px solid #EE354E;
 }
 
-h3, h3 {
-  margin-top: 5px;
-  margin-bottom: 5px;
+h3, h4 {
+  margin-top: 0px;
+  margin-bottom: 10px;
 }
 
 h3 {
@@ -61,6 +54,7 @@ h3 {
 
 #userMarker {
   color: #1BAC9E;
+  display: none;
 }
 
 .event {
@@ -81,6 +75,7 @@ h3 {
 .website {
   font-size: 0.9em;
 }
+
 /* https://www.sitepoint.com/create-calendar-icon-html5-css3/ */
 time.icon
 {
