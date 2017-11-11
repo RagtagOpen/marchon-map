@@ -19,7 +19,7 @@ body {
 }
 
 #affiliate {
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   position: absolute;
   top: 10px;
@@ -29,6 +29,7 @@ body {
   height: 96%;
   background-color: #F5E9C9;
   padding: 10px;
+  display: none;
 }
 
 .social {
@@ -49,8 +50,12 @@ body {
   border: 3px solid #EE354E;
 }
 
+h3, h3 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 h3 {
-  margin-top: 10px;
   font-size: 20px;
 }
 

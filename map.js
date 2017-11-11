@@ -1,4 +1,5 @@
 mapboxgl.accessToken = document.getElementById('mapjs').getAttribute('data-token');
+const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/affiliates.json');
 
 const app = new Vue({
   el: '#app',
@@ -47,22 +48,19 @@ const app = new Vue({
       }
     }, 100));
     this.map.on('load', () => {
-      this.map.addSource('marchon-sheet', {
-        type: 'geojson',
-        data: 'https://s3.amazonaws.com/ragtag-marchon/affiliates.json',
+      this.mapLoaded = true;
+      // load GeoJSON, then pass to Mapbox
+      // Mapbox won't share if it loads the data: https://github.com/mapbox/mapbox-gl-js/issues/1762
+      geojson.then((data) => {
+        this.map.addSource('marchon-geojson', { type: 'geojson', data });
+        this.features = data.features;
+        document.getElementById('affiliate').style.display = 'block';
       });
       this.map.addLayer({
-        id: 'marchon-sheet',
+        id: 'marchon',
         type: 'symbol',
-        source: 'marchon-sheet',
+        source: 'marchon-geojson',
         layout: { 'icon-image': 'smallstar' },
-      });
-      this.mapLoaded = true;
-      this.map.on('sourcedata', 'marchon-sheet', (e) => {
-        if (!e.isSourceLoaded || e.features.length < this.features.length) {
-          return;
-        }
-        this.features = e.features;
       });
       this.map.on('click', 'marchon-sheet', e => this.showFeature(e.features[0]));
       this.map.on('mousemove', 'marchon-sheet', _.throttle(e => this.showFeature(e.features[0]), 100));
@@ -73,6 +71,42 @@ const app = new Vue({
         }
       });
     });
+    // TODO: not drawing all features (New England)
+  },
+
+  computed: {
+    events: function events() {
+      const now = moment();
+      const ev = this.features.map((feature) => {
+        const props = feature.properties;
+
+        if (!props.eventDate) {
+          return null;
+        }
+        const dt = moment(feature.properties.eventDate, 'MM/DD/YYYY');
+
+        if (dt.isBefore(now)) {
+          return null;
+        }
+
+        return {
+          location: props.location,
+          name: props.event,
+          ymd: dt.format('YYYY-MM-DD'),
+          weekday: dt.format('dddd'),
+          month: dt.format('MMMM'),
+          day: dt.format('D'),
+          past: dt.isBefore(now),
+          link: props.eventLink,
+        };
+      });
+
+      return _.compact(ev);
+    },
+
+    sortedUpcomingEvents: function sortedEvents() {
+      return _.sortBy(this.events, ['ymd', 'name']);
+    },
   },
 
   watch: {
@@ -148,13 +182,8 @@ const app = new Vue({
       const props = feature.properties;
 
       props.mailto = `mailto:${props.contactEmail}`;
-      if (props.eventDate && props.eventDate.length) {
-        const dt = moment(props.eventDate, 'MM/DD/YYYY');
-
-        props.eventYmd = dt.format('YYYY-MM-DD');
-        props.eventWeekday = dt.format('dddd');
-        props.eventMonth = dt.format('MMMM');
-        props.eventDay = dt.format('D');
+      if (props.event) {
+        props.eventMeta = this.events.find(ev => ev.location === props.location && !ev.past);
       }
       this.activeGroup = props;
     },
