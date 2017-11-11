@@ -56,6 +56,8 @@ const app = new Vue({
         this.features = data.features;
         document.getElementById('affiliate').style.display = 'block';
       });
+      const el = document.getElementsByClassName('mapboxgl-ctrl-attrib')[0];
+
       this.map.addLayer({
         id: 'marchon',
         type: 'symbol',
@@ -74,8 +76,8 @@ const app = new Vue({
           this.hidePopup(e.features[0]);
         }
       });
+      el.innerHTML = `by <a style="text-decoration: underline" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ${el.innerHTML}`;
     });
-    // TODO: not drawing all features (New England)
   },
 
   computed: {
