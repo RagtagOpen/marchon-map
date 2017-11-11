@@ -60,12 +60,16 @@ const app = new Vue({
         id: 'marchon',
         type: 'symbol',
         source: 'marchon-geojson',
-        layout: { 'icon-image': 'smallstar' },
+        layout: {
+          'icon-image': 'smallstar',
+          'icon-allow-overlap': true,
+          'text-allow-overlap': true,
+        },
       });
-      this.map.on('click', 'marchon-sheet', e => this.showFeature(e.features[0]));
-      this.map.on('mousemove', 'marchon-sheet', _.throttle(e => this.showFeature(e.features[0]), 100));
-      this.map.on('mouseenter', 'marchon-sheet', e => this.showPopup(e.features[0]));
-      this.map.on('mouseleave', 'marchon-sheet', (e) => {
+      this.map.on('click', 'marchon', e => this.showFeature(e.features[0]));
+      this.map.on('mousemove', 'marchon', _.throttle(e => this.showFeature(e.features[0]), 100));
+      this.map.on('mouseenter', 'marchon', e => this.showPopup(e.features[0]));
+      this.map.on('mouseleave', 'marchon', (e) => {
         if (e.features && e.features.length) {
           this.hidePopup(e.features[0]);
         }
