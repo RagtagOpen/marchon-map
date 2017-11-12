@@ -120,6 +120,11 @@ const app = new Vue({
       if (this.userLocation) {
         this.zoomToClosest();
       }
+      this.highlightSearch();
+    },
+
+    activeGroup: function activeGroup() {
+      this.highlightSearch();
     },
 
     userLocation: function userLocation() {
@@ -130,6 +135,29 @@ const app = new Vue({
   },
 
   methods: {
+    highlightSearch() {
+      const control = document.getElementsByClassName('mapboxgl-ctrl-geocoder');
+
+      if (!control) {
+        return;
+      }
+
+      const el = control[0];
+
+      if (this.activeGroup) {
+        el.className = el.className.replace('highlight', '');
+        el.removeChild(document.getElementById('arrowMarker'));
+      } else {
+        const arrow = document.createElement('div');
+
+        el.className += ' highlight';
+        arrow.className = 'arrow-marker';
+        arrow.id = 'arrowMarker';
+        arrow.innerHTML = '<i class="fa fa-chevron-left"></i>';
+        el.insertBefore(arrow, el.childNodes[0]);
+      }
+    },
+
     zoomToClosest() {
       if (!this.features.length) {
         return;

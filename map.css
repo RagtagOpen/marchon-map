@@ -30,7 +30,10 @@ body {
 .social-link {
   margin-right: 10px;
   font-size: 1.2em;
-  color:  #000;
+}
+
+.social-link a {
+  color: #000;
 }
 
 .photo, .social-links {
@@ -43,9 +46,13 @@ body {
   border: 3px solid #EE354E;
 }
 
-h3, h4 {
+h3 {
   margin-top: 0px;
   margin-bottom: 10px;
+}
+
+h4 {
+  margin-top: 10px;
 }
 
 h3 {
@@ -74,6 +81,23 @@ h3 {
 
 .website {
   font-size: 0.9em;
+}
+
+.arrow-marker {
+  color: #EE354E;
+  font-size: 24px;
+  font-weight: bold;
+  float: right;
+  margin-top: 8px;
+  margin-right: 5px;
+}
+
+.mapboxgl-ctrl-geocoder.highlight {
+  border: 3px solid #EE354E;
+}
+
+.mapboxgl-ctrl-geocoder.highlight input[type='text'] {
+  width: auto;
 }
 
 /* https://www.sitepoint.com/create-calendar-icon-html5-css3/ */

@@ -64,6 +64,9 @@
           </div>
         </div>
         <div v-else>
+          <div>
+            Click on any star to see information about that affiliate, or enter your location in the search box to find your nearest affiliate.
+          </div>
           <h4>Upcoming events</h4>
           <ul class="list-group">
             <li v-for="ev in sortedUpcomingEvents" class="list-group-item event">
@@ -80,11 +83,12 @@
             </li>
           </ul>
         </div>
-        <div id="userMarker">
-          <i class="fa fa-circle"></i>
-        </div>
       </div>
     </div>
+    <div id="userMarker">
+      <i class="fa fa-circle"></i>
+    </div>
+
     <link rel="stylesheet" id="vc_google_fonts_roboto100100italic300300italicregularitalic500500italic700700italic900900italic-css" href="//fonts.googleapis.com/css?family=Roboto%3A100%2C100italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic" type="text/css" media="all">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
     <link href="map.css" rel="stylesheet" />
