@@ -146,7 +146,12 @@ const app = new Vue({
 
       if (this.activeGroup) {
         el.className = el.className.replace('highlight', '');
-        el.removeChild(document.getElementById('arrowMarker'));
+
+        const arrow = document.getElementById('arrowMarker');
+
+        if (arrow) {
+          el.removeChild(arrow);
+        }
       } else {
         const arrow = document.createElement('div');
 
