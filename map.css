@@ -5,6 +5,11 @@ body {
   font-family: 'Roboto';
 }
 
+a {
+  color: #000;
+  text-decoration: underline;
+}
+
 .content {
   position: absolute;
   top: 0px;
