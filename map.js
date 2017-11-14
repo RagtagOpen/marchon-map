@@ -56,7 +56,15 @@ const app = new Vue({
         this.features = data.features;
         document.getElementById('affiliate').style.display = 'block';
       });
-      const el = document.getElementsByClassName('mapboxgl-ctrl-attrib')[0];
+
+      setTimeout(() => {
+        const el = document.getElementsByClassName('mapboxgl-ctrl-attrib');
+
+        if (el && el.length) {
+          el[0].innerHTML = `by <a style="text-decoration: underline" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ${el[0].innerHTML}`;
+          console.log('attribution updated');
+        }
+      }, 200);
 
       this.map.addLayer({
         id: 'marchon',
@@ -76,7 +84,6 @@ const app = new Vue({
           this.hidePopup(e.features[0]);
         }
       });
-      el.innerHTML = `by <a style="text-decoration: underline" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ${el.innerHTML}`;
     });
   },
 
