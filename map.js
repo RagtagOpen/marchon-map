@@ -59,11 +59,21 @@ const app = new Vue({
         const lat = this.features.map(f => f.geometry.coordinates[1]).concat([49.33, 24.52]);
         const lng = this.features.map(f => f.geometry.coordinates[0]).concat([-66.95, -124.77]);
 
-        lng.push();
         this.map.fitBounds([
           [_.min(lng), _.min(lat)], // sw
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
+
+        this.map.addLayer({
+          id: 'marchon',
+          type: 'symbol',
+          source: 'marchon-geojson',
+          layout: {
+            'icon-image': 'smallstar',
+            'icon-allow-overlap': true,
+            'text-allow-overlap': true,
+          },
+        });
       });
 
       setTimeout(() => {
@@ -75,16 +85,6 @@ const app = new Vue({
         }
       }, 200);
 
-      this.map.addLayer({
-        id: 'marchon',
-        type: 'symbol',
-        source: 'marchon-geojson',
-        layout: {
-          'icon-image': 'smallstar',
-          'icon-allow-overlap': true,
-          'text-allow-overlap': true,
-        },
-      });
       this.map.on('click', 'marchon', e => this.showFeature(e.features[0]));
       this.map.on('mousemove', 'marchon', _.throttle(e => this.showFeature(e.features[0]), 100));
       this.map.on('mouseenter', 'marchon', e => this.showPopup(e.features[0]));
