@@ -22,6 +22,7 @@ const app = new Vue({
   },
 
   mounted: function mounted() {
+    document.getElementById('mapApp').style.display = 'block';
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/march-on/cj9nq97bw3oco2snohkuh423m',
