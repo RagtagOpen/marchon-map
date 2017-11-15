@@ -55,6 +55,15 @@ const app = new Vue({
         this.map.addSource('marchon-geojson', { type: 'geojson', data });
         this.features = data.features;
         document.getElementById('affiliate').style.display = 'block';
+        // fit all features + US bounding box
+        const lat = this.features.map(f => f.geometry.coordinates[1]).concat([49.33, 24.52]);
+        const lng = this.features.map(f => f.geometry.coordinates[0]).concat([-66.95, -124.77]);
+
+        lng.push();
+        this.map.fitBounds([
+          [_.min(lng), _.min(lat)], // sw
+          [_.max(lng), _.max(lat)], // ne
+        ], { padding: 10 });
       });
 
       setTimeout(() => {
