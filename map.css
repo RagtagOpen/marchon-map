@@ -13,19 +13,20 @@ a {
 .content {
   position: absolute;
   top: 0px;
-  right: 0px;
   bottom: 0px;
+  right: 0px;
 }
 
 #map {
   width: 65%;
-  left: 0px;
+  left: 1%;
 }
 
 #affiliate {
   overflow-y: auto;
   overflow-x: hidden;
-  left: 66%;
+  left: 67%;
+  margin-right: 1%;
   height: 100%;
   background-color: #F5E9C9;
   padding: 10px;
