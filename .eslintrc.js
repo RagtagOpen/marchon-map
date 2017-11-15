@@ -20,6 +20,7 @@ module.exports = {
     _: false,
     MapboxGeocoder: false,
     moment: false,
+    pegasus: false,
   },
   rules: {
     'array-callback-return': 0,

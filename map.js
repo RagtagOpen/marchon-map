@@ -125,7 +125,7 @@ const app = new Vue({
   watch: {
     mapLoaded: function mapLoaded() {
       if (this.userLocation) {
-        this.zoomToClosest();
+        this.highlightClosest();
       }
       this.highlightSearch();
     },
@@ -136,7 +136,7 @@ const app = new Vue({
 
     userLocation: function userLocation() {
       if (this.mapLoaded) {
-        this.zoomToClosest();
+        this.highlightClosest();
       }
     },
   },
@@ -170,7 +170,7 @@ const app = new Vue({
       }
     },
 
-    zoomToClosest() {
+    highlightClosest() {
       if (!this.features.length) {
         return;
       }
@@ -179,23 +179,12 @@ const app = new Vue({
         const coords = feature.geometry.coordinates;
         const distance = this.distance(loc.latitude, loc.longitude, coords[1], coords[0]);
 
-        console.log(`${feature.properties.name} = ${distance}km`);
-
         return {
           feature,
           distance,
         };
       });
       const closest = _.minBy(withDistance, d => d.distance);
-      const featureLoc = closest.feature.geometry.coordinates; // [lng, lat]
-
-      this.map.fitBounds([
-        // sw
-        [Math.min(loc.longitude, featureLoc[0]), Math.min(loc.latitude, featureLoc[1])],
-        // ne
-        [Math.max(loc.longitude, featureLoc[0]), Math.max(loc.latitude, featureLoc[1])],
-      ],
-      { maxZoom: 15, padding: 100 });
 
       if (!this.userMarker) {
         const el = document.getElementById('userMarker');
