@@ -23,17 +23,17 @@
           <h4>{{activeGroup.location}}</h4>
           <div class="social-links">
             <span v-if="activeGroup.facebook" class="social-link">
-              <a :href="activeGroup.facebook">
+              <a :href="activeGroup.facebook" target="_blank">
                 <i class="fa fa-facebook" aria-hidden="true"></i>
               </a>
             </span>
             <span v-if="activeGroup.twitter" class="social-link">
-              <a :href="activeGroup.twitter">
+              <a :href="activeGroup.twitter" target="_blank">
                 <i class="fa fa-twitter" aria-hidden="true"></i>
               </a>
             </span>
             <span v-if="activeGroup.instagram" class="social-link">
-              <a :href="activeGroup.instagram">
+              <a :href="activeGroup.instagram" target="_blank">
                 <i class="fa fa-instagram" aria-hidden="true"></i>
               </a>
             </span>
@@ -50,17 +50,17 @@
               </time>
             </div>
             <div class="event-title">
-              <a :href="activeGroup.eventLink">{{activeGroup.event}}</a>
+              <a :href="activeGroup.eventLink" target="_blank">{{activeGroup.event}}</a>
             </div>
           </div>
           <div class="contact">
-            Contact: <a :href="activeGroup.mailto">{{activeGroup.contactName}}</a>
+            Contact: <a :href="activeGroup.mailto" target="_blank">{{activeGroup.contactName}}</a>
           </div>
           <div v-if="activeGroup.website">
-            Website: <a class="website" :href="activeGroup.website">{{activeGroup.website}}</a>
+            Website: <a class="website" :href="activeGroup.website" target="_blank">{{activeGroup.website}}</a>
           </div>
           <div v-if="activeGroup.other">
-            Other: <a class="website" :href="activeGroup.other">{{activeGroup.other}}</a>
+            Other: <a class="website" :href="activeGroup.other" target="_blank">{{activeGroup.other}}</a>
           </div>
         </div>
         <div v-else>
@@ -78,7 +78,7 @@
                 </time>
               </div>
               <div class="event-title">
-                <a :href="ev.link">{{ev.name}}</a> - {{ev.location}}
+                <a :href="ev.link" target="_blank">{{ev.name}}</a> - {{ev.location}}
               </div>
             </li>
           </ul>
