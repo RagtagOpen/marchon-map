@@ -18,25 +18,24 @@ def get_sheet_data():
         # but seems to work fine
         pass
     result = service.spreadsheets().values().get(
-        spreadsheetId=os.environ['SHEET_ID'], range='Sheet1!A1:R').execute()
+        spreadsheetId=os.environ['SHEET_ID'], range='Sheet1!A1:S').execute()
     values = result.get('values', [])
     # 0 Group Name (as shown on website/docs), 1 Location, 2 Form filled out,
     # 3 Main contact name, 4 Title, 5 Main contact info, 6 Secondary contact info
     # 7 Third contact, 8 Org Status, 9 Facebook, 10 Twitter, 11 Insta,
     # 12 Other social link, 13 Website, 14 Upcoming event, 15 Event date
-    # 16 Event Link, 17 Photo
+    # 16 Event Link, 17 Photo, 18 About
     # keep these fields
     fields = {'name': 0, 'location': 1, 'contactName': 3, 'contactEmail': 5,
               'facebook': 9, 'twitter': 10, 'instagram': 11, 'other': 12,
               'website': 13, 'event': 14, 'eventDate': 15, 'eventLink': 16,
-              'photo': 17}
+              'photo': 17, 'about': 18}
     location = 1
     rows = {}
     empty = {}
     for field in fields:
         empty[field] = ''
     for row in values[1:]:
-        print(row)
         props = {'source': 'sheet'}
         props.update(empty)
         for field in fields:
@@ -46,6 +45,7 @@ def get_sheet_data():
         # skip if no location; nothing to map
         if row[location]:
             rows[row[location]] = {'properties': props}
+            print('row %s\t%s\t%s' % (len(rows) + 1, props['name'], props['location']))
         else:
             print('WARNING\tskipping %s: no location' % (props['name']))
     print('read %s rows from sheet' % (len(rows)))
