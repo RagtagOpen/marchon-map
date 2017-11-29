@@ -56,7 +56,6 @@ def get_dataset():
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/affiliates.json')
     features = {}
     for feature in resp.json()['features']:
-        print('feature=%s' % feature)
         features[feature['properties']['location']] = feature
     print('read %s features' % (len(features)))
     return features
@@ -95,16 +94,16 @@ def merge_data(sheet, dataset):
             dataset[key] = row
         dataset[key]['type'] = 'Feature'
         if not dataset[key].get('geometry', None):
+            print('%s missing geometry; deleting')
             del dataset[key]
 
     orphans = []
     for key in dataset:
-        feature = dataset[key]
-        if feature.get('source') != 'sheet':
-            continue
         if key in sheet:
+            print('%s in dataset and sheet' % key)
             continue
         orphans.append(key)
+    print('%s orphans: %s' % (len(orphans), orphans))
     for key in orphans:
         del dataset[key]
 
@@ -189,7 +188,6 @@ def update_photos(dataset):
 def lambda_handler(event=None, context=None):
     sheet = get_sheet_data()
     dataset = get_dataset()
-    print('read %s features from dataset' % (len(dataset)))
     keys = sheet.keys() - dataset.keys()
     if keys:
         get_geodata(sheet, keys)
