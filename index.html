@@ -41,6 +41,9 @@
           <div v-if="activeGroup.photoUrl" class="photo">
             <img :src="activeGroup.photoUrl" class="img-thumbnail">
           </div>
+          <div v-if="activeGroup.about" class="about">
+            {{activeGroup.about}}
+          </div>
           <div v-if="activeGroup.event" class="event">
             <div class="event-date">
               <time :datetime="activeGroup.eventMeta.ymd" class="icon">
