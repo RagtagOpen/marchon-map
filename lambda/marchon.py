@@ -33,6 +33,7 @@ def get_sheet_data():
     location = 1
     rows = {}
     empty = {}
+    print('\nload sheet')
     for field in fields:
         empty[field] = ''
     for row in values[1:]:
@@ -44,7 +45,7 @@ def get_sheet_data():
                 props[field] = row[idx].strip()
         # skip if no location; nothing to map
         if row[location]:
-            rows[row[location]] = {'properties': props}
+            rows[row[location].strip()] = {'properties': props}
             print('row %s\t%s\t%s' % (len(rows) + 1, props['name'], props['location']))
         else:
             print('WARNING\tskipping %s: no location' % (props['name']))
@@ -53,6 +54,7 @@ def get_sheet_data():
 
 
 def get_dataset():
+    print('\nload geojson')
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/affiliates.json')
     features = {}
     for feature in resp.json()['features']:
@@ -71,7 +73,7 @@ def get_geodata(sheet, keys):
         if 'features' in response and response['features']:
             feature = response['features'][0]
             print('geocode %s\n\t%s' % (key, feature))
-            if feature['relevance'] < 0.9:
+            if feature['relevance'] < 0.75:
                 print('WARNING\terror geocoding %s' % (key))
                 continue
             sheet[key]['geometry'] = response['features'][0]['geometry']
@@ -94,7 +96,7 @@ def merge_data(sheet, dataset):
             dataset[key] = row
         dataset[key]['type'] = 'Feature'
         if not dataset[key].get('geometry', None):
-            print('%s missing geometry; deleting')
+            print('%s missing geometry; deleting' % key)
             del dataset[key]
 
     orphans = []
@@ -149,6 +151,7 @@ def resize_photo(service, file):
 
 def update_photos(dataset):
     # map filename to affiliate key
+    print('\nupdate photos')
     photos = {}
     for key in dataset:
         props = dataset[key]['properties']
@@ -174,7 +177,6 @@ def update_photos(dataset):
             print('%s not referenced from dataset' % photo['name'])
             continue
         if dataset[key]['properties'].get('photoUrl', None):
-            print('%s already has url' % (photo['name']))
             continue
         try:
             url = 'https://s3.amazonaws.com/ragtag-marchon/%s' % resize_photo(service, photo)
@@ -187,7 +189,9 @@ def update_photos(dataset):
 
 def lambda_handler(event=None, context=None):
     sheet = get_sheet_data()
+    print('sheet=%s\n' % sheet)
     dataset = get_dataset()
+    print('dataset=%s\n' % dataset)
     keys = sheet.keys() - dataset.keys()
     if keys:
         get_geodata(sheet, keys)
