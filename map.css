@@ -21,20 +21,39 @@ a {
   right: 0px;
 }
 
-#map {
-  width: 65%;
-  left: 1%;
+@media screen and (min-width: 768px) {
+  #map {
+    width: 65%;
+    left: 1%;
+  }
+
+  #affiliate {
+    overflow-y: auto;
+    overflow-x: hidden;
+    left: 67%;
+    margin-right: 1%;
+    height: 100%;
+    background-color: #F5E9C9;
+    padding: 10px;
+    display: none;
+  }
+  .mapboxgl-popup-content .card-detail, .mapboxgl-popup-content .event-list, .mapboxgl-popup-close-button {
+    display: none;
+  }
+  .mapboxgl-popup-content .name {
+    font-weight: bold;
+  }
 }
 
-#affiliate {
-  overflow-y: auto;
-  overflow-x: hidden;
-  left: 67%;
-  margin-right: 1%;
-  height: 100%;
-  background-color: #F5E9C9;
-  padding: 10px;
-  display: none;
+@media screen and (max-width: 767px) {
+  #map {
+    width: 98%;
+    left: 1%;
+  }
+
+  #affiliate, .card-content {
+    display: none;
+  }
 }
 
 .social-link {
@@ -67,6 +86,15 @@ h4 {
 
 h3 {
   font-size: 20px;
+}
+
+@media screen and (max-width: 768px) {
+  h3 {
+    font-size: 18px;
+  }
+  h4 {
+    font-size: 16px;
+  }
 }
 
 #userMarker {
@@ -154,3 +182,29 @@ time.icon .event-date {
   color: #2f2f2f;
   font-weight: bold;
 }
+
+.event-date-xs {
+  border: 1px solid #bdbdbd;
+  border-radius: 3px;
+  text-align: center
+}
+
+.event-date-xs .event-month {
+  color: #fff;
+  background-color: #339999;
+  padding: 1px;
+  font-size: 0.9em;
+}
+
+.event-date-xs .event-date {
+  font-size: 1.6em;
+  color: #2f2f2f;
+  font-weight: bold;
+  padding-top: 3px;
+}
+
+.event-date-xs .event-weekday {
+  padding: 0 3px 0 3px;
+  font-size: 0.9em;
+}
+

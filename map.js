@@ -31,8 +31,8 @@ const app = new Vue({
     });
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
     this.popup = new mapboxgl.Popup({
-      closeButton: false,
-      closeOnClick: false,
+      closeButton: true,
+      closeOnClick: true,
     });
     this.geocoder = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
@@ -86,9 +86,14 @@ const app = new Vue({
         }
       }, 200);
 
-      this.map.on('click', 'marchon', e => this.showFeature(e.features[0]));
+      this.map.on('click', 'marchon', (e) => {
+        this.showFeature(e.features[0]);
+        this.showPopup(e.features[0]);
+      });
       this.map.on('mousemove', 'marchon', _.throttle(e => this.showFeature(e.features[0]), 100));
-      this.map.on('mouseenter', 'marchon', e => this.showPopup(e.features[0]));
+      this.map.on('mouseenter', 'marchon', (e) => {
+        this.showPopup(e.features[0]);
+      });
       this.map.on('mouseleave', 'marchon', (e) => {
         if (e.features && e.features.length) {
           this.hidePopup(e.features[0]);
@@ -145,7 +150,9 @@ const app = new Vue({
     },
 
     userLocation: function userLocation() {
-      if (this.mapLoaded) {
+      // geolocation takes a bit; don't set popup to closest if
+      // user has already clicked one
+      if (this.mapLoaded && !this.popupLocation) {
         this.highlightClosest();
       }
     },
@@ -234,14 +241,30 @@ const app = new Vue({
     },
 
     showPopup: function showPopup(feature) {
+      console.log('show popup for ', feature.properties.location);
+      if (this.popup) {
+        this.popup.remove();
+      }
+      // draw popup immediately with name
       this.popup
         .setLngLat(feature.geometry.coordinates)
-        .setHTML(`<b>${feature.properties.name}</b>`)
+        .setHTML(`<div id="popupContent"><b>${feature.properties.name}</b></div>`)
         .addTo(this.map);
+      this.popupLocation = feature.properties.location;
+      // update html when it's ready
+      this.$nextTick(function popup() {
+        // popup.setHTML doesn't update properly
+        this.popup.remove();
+        this.popup
+          .setLngLat(feature.geometry.coordinates)
+          .setHTML(document.getElementById('affiliateContent').innerHTML)
+          .addTo(this.map);
+      });
     },
 
     hidePopup: function hidePopup() {
       this.popup.remove();
+      this.popupLocation = null;
     },
   },
 });
