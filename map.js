@@ -19,6 +19,7 @@ const app = new Vue({
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition((position) => {
         this.userLocation = position.coords;
+        this.locationSrc = 'browser';
       });
     }
   },
@@ -48,6 +49,7 @@ const app = new Vue({
           latitude: r.result.center[1],
           longitude: r.result.center[0],
         };
+        this.locationSrc = 'search';
       }
     }, 100));
     this.map.on('load', () => {
@@ -146,7 +148,7 @@ const app = new Vue({
     userLocation: function userLocation() {
       // geolocation takes a bit; don't set popup to closest if
       // user has already clicked one
-      if (this.mapLoaded && !this.popupLocation) {
+      if (this.mapLoaded && (this.locationSrc === 'search' || !this.popupLocation)) {
         this.highlightClosest();
       }
     },
