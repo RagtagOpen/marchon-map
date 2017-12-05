@@ -10,7 +10,8 @@ from mapbox import Geocoder
 from PIL import Image
 import requests
 
-def get_sheet_data():
+def read_sheet(sheet_range, fields, location_idx, affiliate):
+    print('\nload sheet %s with %s' % (os.environ['SHEET_ID'], os.environ['GOOGLE_API_KEY']));
     try:
         service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'])
     except:
@@ -18,34 +19,27 @@ def get_sheet_data():
         # but seems to work fine
         pass
     result = service.spreadsheets().values().get(
-        spreadsheetId=os.environ['SHEET_ID'], range='Sheet1!A1:S').execute()
+        spreadsheetId=os.environ['SHEET_ID'], range=sheet_range).execute()
     values = result.get('values', [])
-    # 0 Group Name (as shown on website/docs), 1 Location, 2 Form filled out,
-    # 3 Main contact name, 4 Title, 5 Main contact info, 6 Secondary contact info
-    # 7 Third contact, 8 Org Status, 9 Facebook, 10 Twitter, 11 Insta,
-    # 12 Other social link, 13 Website, 14 Upcoming event, 15 Event date
-    # 16 Event Link, 17 Photo, 18 About
-    # keep these fields
-    fields = {'name': 0, 'location': 1, 'contactName': 3, 'contactEmail': 5,
-              'facebook': 9, 'twitter': 10, 'instagram': 11, 'other': 12,
-              'website': 13, 'event': 14, 'eventDate': 15, 'eventLink': 16,
-              'photo': 17, 'about': 18}
-    location = 1
     rows = {}
     empty = {}
-    print('\nload sheet')
     for field in fields:
         empty[field] = ''
     for row in values[1:]:
-        props = {'source': 'sheet'}
+        props = {'source': 'events', 'affiliate': affiliate}
         props.update(empty)
         for field in fields:
             idx = fields[field]
             if idx < len(row):
                 props[field] = row[idx].strip()
+                # Y|N to boolean
+                if props[field] == 'Y':
+                    props[field] = True
+                if props[field] == 'N':
+                    props[field] = False
         # skip if no location; nothing to map
-        if row[location]:
-            rows[row[location].strip()] = {'properties': props}
+        if row[location_idx]:
+            rows[row[location_idx].strip()] = {'properties': props}
             print('row %s\t%s\t%s' % (len(rows) + 1, props['name'], props['location']))
         else:
             print('WARNING\tskipping %s: no location' % (props['name']))
@@ -53,9 +47,42 @@ def get_sheet_data():
     return rows
 
 
-def get_dataset():
+def get_event_data():
+    '''
+    0 January 2018 Anniversary Action Event   1 Event date  2 Event Link  3 Event location
+    4 Hosted by:  5 Affiliate?  6 Main contact name   7 Main contact info   8 Facebook
+    9 Twitter 10 Insta
+    '''
+    # keep these fields
+    fields = {'name': 0, 'eventDate': 1, 'eventLink': 2, 'location': 3, 'host': 4,
+              'affiliate': 5, 'contactName': 6, 'contactEmail': 7, 'facebook': 8,
+              'twitter': 9, 'instagram': 10}
+    sheet = read_sheet('Sheet1!A1:K', fields, 3, False)
+    # add default name
+    for loc in sheet:
+        if not sheet[loc]['properties']['name']:
+            sheet[loc]['properties']['name'] = '%s Event' % loc
+    return sheet
+
+def get_sheet_data():
+    '''
+     0 Group Name (as shown on website/docs), 1 Location, 2 Form filled out,
+     3 Main contact name, 4 Title, 5 Main contact info, 6 Secondary contact info
+     7 Third contact, 8 Org Status, 9 Facebook, 10 Twitter, 11 Insta,
+     12 Other social link, 13 Website, 14 Upcoming event, 15 Event date
+     16 Event Link, 17 Photo, 18 About
+    '''
+    # keep these fields
+    fields = {'name': 0, 'location': 1, 'contactName': 3, 'contactEmail': 5,
+              'facebook': 9, 'twitter': 10, 'instagram': 11, 'other': 12,
+              'website': 13, 'event': 14, 'eventDate': 15, 'eventLink': 16,
+              'photo': 17, 'about': 18}
+    return read_sheet('Sheet1!A1:S', fields, 1, True)
+
+
+def get_geojson(url):
     print('\nload geojson')
-    resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/affiliates.json')
+    resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
         features[feature['properties']['location']] = feature
@@ -112,13 +139,13 @@ def merge_data(sheet, dataset):
     return dataset
 
 
-def upload(dataset):
+def upload(dataset, filename):
     data = {
         'type': 'FeatureCollection',
         'features': [dataset[key] for key in dataset]
     }
     s3 = boto3.resource('s3')
-    print(s3.Object('ragtag-marchon', 'affiliates.json').put(
+    print(s3.Object('ragtag-marchon', filename).put(
         Body=json.dumps(data, indent=2),
         ContentType='application/json',
         ACL='public-read',
@@ -190,11 +217,22 @@ def update_photos(dataset):
 def lambda_handler(event=None, context=None):
     sheet = get_sheet_data()
     print('sheet=%s\n' % sheet)
-    dataset = get_dataset()
+    dataset = get_geojson('affiliates.json')
     print('dataset=%s\n' % dataset)
     keys = sheet.keys() - dataset.keys()
     if keys:
         get_geodata(sheet, keys)
     merge_data(sheet, dataset)
     update_photos(dataset)
-    upload(dataset)
+    upload(dataset, 'affiliates.json')
+
+def events_lambda_handler(event=None, context=None):
+    sheet = get_event_data()
+    print('sheet=%s\n' % sheet)
+    dataset = get_geojson('events.json')
+    print('dataset=%s\n' % dataset)
+    keys = sheet.keys() - dataset.keys()
+    if keys:
+        get_geodata(sheet, keys)
+    merge_data(sheet, dataset)
+    upload(dataset, 'events.json')

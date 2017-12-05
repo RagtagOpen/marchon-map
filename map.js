@@ -1,5 +1,7 @@
-mapboxgl.accessToken = document.getElementById('mapjs').getAttribute('data-token');
-const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/affiliates.json');
+const mapjs = document.getElementById('mapjs');
+const geojson = pegasus(`https://s3.amazonaws.com/ragtag-marchon/${mapjs.getAttribute('data-filename')}`);
+
+mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
 const app = new Vue({
   el: '#mapApp',
@@ -53,7 +55,15 @@ const app = new Vue({
       // load GeoJSON, then pass to Mapbox
       // Mapbox won't share if it loads the data: https://github.com/mapbox/mapbox-gl-js/issues/1762
       geojson.then((data) => {
-        this.map.addSource('marchon-geojson', { type: 'geojson', data });
+        const affiliate = {
+          type: 'FeatureCollection',
+          features: _.filter(data.features, (feature) => feature.properties.affiliate)
+        };
+        const other = {
+          type: 'FeatureCollection',
+          features: _.filter(data.features, (feature) => !feature.properties.affiliate)
+        };
+
         this.features = data.features;
         document.getElementById('affiliate').style.display = 'block';
         // fit all features + US bounding box
@@ -65,16 +75,14 @@ const app = new Vue({
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
 
-        this.map.addLayer({
-          id: 'marchon',
-          type: 'symbol',
-          source: 'marchon-geojson',
-          layout: {
-            'icon-image': 'smallstar',
-            'icon-allow-overlap': true,
-            'text-allow-overlap': true,
-          },
-        });
+        if (affiliate.features.length) {
+          this.map.addSource('marchon-affiliate-geojson', { type: 'geojson', data: affiliate });
+          this.addLayer('marchon-affiliate', 'marchon-affiliate-geojson', 'smallstar');
+        }
+        if (other.features.length) {
+          this.map.addSource('marchon-other-geojson', { type: 'geojson', data: other });
+          this.addLayer('marchon-other', 'marchon-other-geojson', 'star-15-red');
+        }
       });
 
       setTimeout(() => {
@@ -85,20 +93,6 @@ const app = new Vue({
           console.log('attribution updated');
         }
       }, 200);
-
-      this.map.on('click', 'marchon', (e) => {
-        this.showFeature(e.features[0]);
-        this.showPopup(e.features[0]);
-      });
-      this.map.on('mousemove', 'marchon', _.throttle(e => this.showFeature(e.features[0]), 100));
-      this.map.on('mouseenter', 'marchon', (e) => {
-        this.showPopup(e.features[0]);
-      });
-      this.map.on('mouseleave', 'marchon', (e) => {
-        if (e.features && e.features.length) {
-          this.hidePopup(e.features[0]);
-        }
-      });
     });
   },
 
@@ -159,6 +153,32 @@ const app = new Vue({
   },
 
   methods: {
+    addLayer(layerId, source, icon) {
+      this.map.addLayer({
+        id: layerId,
+        type: 'symbol',
+        source,
+        layout: {
+          'icon-image': icon,
+          'icon-allow-overlap': true,
+          'text-allow-overlap': true,
+        },
+      });
+      this.map.on('click', layerId, (e) => {
+        this.showFeature(e.features[0]);
+        this.showPopup(e.features[0]);
+      });
+      this.map.on('mousemove', layerId, _.throttle(e => this.showFeature(e.features[0]), 100));
+      this.map.on('mouseenter', layerId, (e) => {
+        this.showPopup(e.features[0]);
+      });
+      this.map.on('mouseleave', layerId, (e) => {
+        if (e.features && e.features.length) {
+          this.hidePopup(e.features[0]);
+        }
+      });
+    },
+
     highlightSearch() {
       const control = document.getElementsByClassName('mapboxgl-ctrl-geocoder');
 
@@ -234,7 +254,7 @@ const app = new Vue({
       const props = feature.properties;
 
       props.mailto = `mailto:${props.contactEmail}`;
-      if (props.event) {
+      if (props.eventDate) {
         props.eventMeta = this.events.find(ev => ev.location === props.location && !ev.past);
       }
       this.activeGroup = props;

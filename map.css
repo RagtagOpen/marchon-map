@@ -22,8 +22,13 @@ a {
 }
 
 @media screen and (min-width: 768px) {
-  #map {
+  .affiliates #map {
     width: 65%;
+    left: 1%;
+  }
+
+  .events #map {
+    width: 98%;
     left: 1%;
   }
 
@@ -37,7 +42,9 @@ a {
     padding: 10px;
     display: none;
   }
-  .mapboxgl-popup-content .card-detail, .mapboxgl-popup-content .event-list, .mapboxgl-popup-close-button {
+  .affiliates .mapboxgl-popup-content .card-detail,
+  .affiliates .mapboxgl-popup-content .event-list,
+  .affiliates .mapboxgl-popup-close-button {
     display: none;
   }
   .mapboxgl-popup-content .name {
@@ -88,8 +95,15 @@ h3 {
   font-size: 20px;
 }
 
+.events h3 {
+  font-size: 16px;
+}
+
 @media screen and (max-width: 768px) {
   h3 {
+    font-size: 18px;
+  }
+  .events h3 {
     font-size: 18px;
   }
   h4 {
@@ -186,7 +200,7 @@ time.icon .event-date {
 .event-date-xs {
   border: 1px solid #bdbdbd;
   border-radius: 3px;
-  text-align: center
+  text-align: center;
 }
 
 .event-date-xs .event-month {
@@ -201,6 +215,7 @@ time.icon .event-date {
   color: #2f2f2f;
   font-weight: bold;
   padding-top: 3px;
+  margin-bottom: -2px;
 }
 
 .event-date-xs .event-weekday {
@@ -208,3 +223,14 @@ time.icon .event-date {
   font-size: 0.9em;
 }
 
+.events #popupContent {
+  display: none;
+}
+
+.events .event {
+  padding-right: 15px;
+}
+
+.events .card-detail {
+  padding-top: 5px;
+}
