@@ -90,13 +90,15 @@ def get_geojson(url):
     return features
 
 
-def get_geodata(sheet, keys):
+def get_geodata(sheet, keys, countries=None):
     # in spreadsheet but not GeoJSON
+    if not countries:
+        countries = ['us', 'ca']
     geocoder = Geocoder()
     for key in keys:
         # San Jose, CA doesn't return results
         response = geocoder.forward(key.replace(', CA', ', California'),
-            limit=1, country=['us', 'ca']).geojson()
+            limit=1, country=countries).geojson()
         if 'features' in response and response['features']:
             feature = response['features'][0]
             print('geocode %s\n\t%s' % (key, feature))
@@ -233,6 +235,6 @@ def events_lambda_handler(event=None, context=None):
     print('dataset=%s\n' % dataset)
     keys = sheet.keys() - dataset.keys()
     if keys:
-        get_geodata(sheet, keys)
+        get_geodata(sheet, keys, countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
     merge_data(sheet, dataset)
     upload(dataset, 'events.json')

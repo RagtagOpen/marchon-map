@@ -1,5 +1,6 @@
 const mapjs = document.getElementById('mapjs');
 const geojson = pegasus(`https://s3.amazonaws.com/ragtag-marchon/${mapjs.getAttribute('data-filename')}`);
+const countries = mapjs.getAttribute('data-countries') || 'us,ca';
 
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
@@ -40,7 +41,7 @@ const app = new Vue({
     this.geocoder = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
       flyTo: false,
-      country: 'us,ca',
+      country: countries,
     });
     this.map.addControl(this.geocoder);
     this.geocoder.on('result', _.throttle((r) => {
@@ -70,9 +71,9 @@ const app = new Vue({
         if (document.getElementById('affiliate')) {
           document.getElementById('affiliate').style.display = 'block';
         }
-        // fit all features + US bounding box
-        const lat = this.features.map(f => f.geometry.coordinates[1]).concat([49.33, 24.52]);
-        const lng = this.features.map(f => f.geometry.coordinates[0]).concat([-66.95, -124.77]);
+        // US + southern Canada bounding box
+        const lat = [43.5, 24.52];
+        const lng = [-66.95, -124.77];
 
         this.map.fitBounds([
           [_.min(lng), _.min(lat)], // sw
