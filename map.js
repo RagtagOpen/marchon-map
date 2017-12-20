@@ -72,7 +72,7 @@ const app = new Vue({
           document.getElementById('affiliate').style.display = 'block';
         }
         // US + southern Canada bounding box
-        const lat = [43.5, 24.52];
+        const lat = [55, 24.52];
         const lng = [-66.95, -124.77];
 
         this.map.fitBounds([
