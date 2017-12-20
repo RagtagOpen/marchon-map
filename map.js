@@ -59,15 +59,17 @@ const app = new Vue({
       geojson.then((data) => {
         const affiliate = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, (feature) => feature.properties.affiliate)
+          features: _.filter(data.features, feature => feature.properties.affiliate),
         };
         const other = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, (feature) => !feature.properties.affiliate)
+          features: _.filter(data.features, feature => !feature.properties.affiliate),
         };
 
         this.features = data.features;
-        document.getElementById('affiliate').style.display = 'block';
+        if (document.getElementById('affiliate')) {
+          document.getElementById('affiliate').style.display = 'block';
+        }
         // fit all features + US bounding box
         const lat = this.features.map(f => f.geometry.coordinates[1]).concat([49.33, 24.52]);
         const lng = this.features.map(f => f.geometry.coordinates[0]).concat([-66.95, -124.77]);
@@ -77,13 +79,13 @@ const app = new Vue({
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
 
-        if (affiliate.features.length) {
-          this.map.addSource('marchon-affiliate-geojson', { type: 'geojson', data: affiliate });
-          this.addLayer('marchon-affiliate', 'marchon-affiliate-geojson', 'smallstar');
-        }
         if (other.features.length) {
           this.map.addSource('marchon-other-geojson', { type: 'geojson', data: other });
           this.addLayer('marchon-other', 'marchon-other-geojson', 'star-15-red');
+        }
+        if (affiliate.features.length) {
+          this.map.addSource('marchon-affiliate-geojson', { type: 'geojson', data: affiliate });
+          this.addLayer('marchon-affiliate', 'marchon-affiliate-geojson', 'smallstar');
         }
       });
 

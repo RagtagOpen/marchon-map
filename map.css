@@ -5,6 +5,10 @@ body {
   font-family: 'Roboto';
 }
 
+body.events {
+  background-color: #ed135c;
+}
+
 #mapApp {
   display: none;
 }
@@ -179,7 +183,7 @@ time.icon .event-month {
   top: 0;
   padding: 0.4em 0;
   color: #fff;
-  background-color: #339999;
+  background-color: #2d9fbd;
   border-bottom: 1px  #f37302;
 }
 
@@ -205,7 +209,7 @@ time.icon .event-date {
 
 .event-date-xs .event-month {
   color: #fff;
-  background-color: #339999;
+  background-color: #2d9fbd;
   padding: 1px;
   font-size: 0.9em;
 }
