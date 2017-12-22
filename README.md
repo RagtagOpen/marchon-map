@@ -48,3 +48,31 @@ upload `linux-lambda.zip` to AWS
 - zoom to closest affiliate on results from [Mapbox Geocoder control](https://github.com/mapbox/mapbox-gl-geocoder)
 - use [Haversine formula](https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula) to find closest affiliate
 - show nearest/clicked/moused over affiliate info in card to the right of map
+
+## local setup
+
+### Google sheet to GeoJSON (python)
+
+Clone this repo and get python 3.6 set up.
+
+[Create a Google project and get API key](https://console.developers.google.com/project/_/apiui/apis/library)
+
+Set these in environment
+
+    GOOGLE_API_KEY
+    SHEET_ID
+    MAPBOX_ACCESS_TOKEN
+
+From the `lambda` directory:
+
+  - install requirements: `pip install -r requirements.txt -t .`
+  - run `python test_events.py > ../events.json`
+
+
+### map (Vue.js)
+
+Run a local web server: `python -m SimpleHTTPServer`
+
+Go http://localhost:8000 in browser
+
+To load a different GeoJSON data file, edit `const geojson = pegasus(`https://s3.amazonaws.com/ragtag-marchon/${mapjs.getAttribute('data-filename')}`);` in [map.js](map.js)

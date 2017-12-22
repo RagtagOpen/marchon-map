@@ -2,13 +2,23 @@
 
 ## Setup
 
-Create a Google project and get API key:
-
-Set GOOGLE_API_KEY in environment
+[Create a Google project and get API key](https://console.developers.google.com/project/_/apiui/apis/library)
 
 Install requirements
 
     pip install -r requirements.txt -t .
+
+## Run
+
+set these in environment
+
+    GOOGLE_API_KEY
+    SHEET_ID
+    MAPBOX_ACCESS_TOKEN
+
+run `python test_events.py > ../events.json` to save 
+
+## reference
 
 [Google API](https://developers.google.com/sheets/api/quickstart/python)
 
@@ -17,16 +27,3 @@ Mapbox APIs
   - [geocoding](https://github.com/mapbox/mapbox-sdk-py/blob/master/docs/geocoding.md#geocoding)
 
 
-## Run
-
-`test.py`
-
-    import os
-    import marchon
-
-    os.environ['GOOGLE_API_KEY'] = 'Google API key'
-    os.environ['SHEET_ID'] = 'Google sheet id'
-    os.environ['DATASET_ID'] = 'Mapbox dataset id'
-    os.environ['MAPBOX_ACCESS_TOKEN'] = 'Mapbox token with dataset:*'
-
-    marchon.lambda_handler()
