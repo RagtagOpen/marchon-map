@@ -94,7 +94,7 @@ const app = new Vue({
         const el = document.getElementsByClassName('mapboxgl-ctrl-attrib');
 
         if (el && el.length) {
-          el[0].innerHTML = `by <a style="text-decoration: underline" target=_blank href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ${el[0].innerHTML}`;
+          el[0].innerHTML = `by <a style="text-decoration: underline" target="_blank" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ${el[0].innerHTML}`;
           console.log('attribution updated');
         }
       }, 200);
