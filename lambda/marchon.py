@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import io
 import json
+import logging
 import os
 import traceback
 
@@ -10,8 +11,10 @@ from mapbox import Geocoder
 from PIL import Image
 import requests
 
+log = logging.getLogger(__name__)
+
 def read_sheet(sheet_range, fields, location_idx, affiliate):
-    print('\nload sheet %s with %s' % (os.environ['SHEET_ID'], os.environ['GOOGLE_API_KEY']));
+    log.info('\nload sheet %s with %s', os.environ['SHEET_ID'], os.environ['GOOGLE_API_KEY']);
     try:
         service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'])
     except:
@@ -40,10 +43,10 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
         # skip if no location; nothing to map
         if row[location_idx]:
             rows[row[location_idx].strip()] = {'properties': props}
-            print('row %s\t%s\t%s' % (len(rows) + 1, props['name'], props['location']))
+            log.debug('row %s\t%s\t%s', len(rows) + 1, props['name'], props['location'])
         else:
-            print('WARNING\tskipping %s: no location' % (props['name']))
-    print('read %s rows from sheet' % (len(rows)))
+            log.warning('WARNING\tskipping %s: no location', (props['name']))
+    log.info('read %s rows from sheet', len(rows))
     return rows
 
 
@@ -81,12 +84,12 @@ def get_sheet_data():
 
 
 def get_geojson(url):
-    print('\nload geojson')
+    log.info('\nload geojson')
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
         features[feature['properties']['location']] = feature
-    print('read %s features' % (len(features)))
+    log.info('read %s features', len(features))
     return features
 
 
@@ -101,62 +104,65 @@ def get_geodata(sheet, keys, countries=None):
             limit=1, country=countries).geojson()
         if 'features' in response and response['features']:
             feature = response['features'][0]
-            print('geocode %s\n\t%s' % (key, feature))
+            log.info('geocode %s\n\t%s', key, feature)
             if feature['relevance'] < 0.75:
-                print('WARNING\terror geocoding %s' % (key))
+                log.warning('WARNING\terror geocoding %s', key)
                 continue
             sheet[key]['geometry'] = response['features'][0]['geometry']
         else:
             if key in sheet:
                 del sheet[key]
-            print('WARNING\terror geocoding %s' % (key))
+            log.warning('WARNING\terror geocoding %s', key)
 
 
 def merge_data(sheet, dataset):
     for key in sheet:
         row = sheet[key]
         if key in dataset and row['properties'] == dataset[key]['properties']:
-            print('%s unchanged' % key)
+            log.info('%s unchanged', key)
             continue
-        print('updating %s' % key)
+        log.info('updating %s', key)
         if key in dataset:
             dataset[key]['properties'].update(row['properties'])
         else:
             dataset[key] = row
         dataset[key]['type'] = 'Feature'
         if not dataset[key].get('geometry', None):
-            print('%s missing geometry; deleting' % key)
+            log.info('%s missing geometry; deleting', key)
             del dataset[key]
 
     orphans = []
     for key in dataset:
         if key in sheet:
-            print('%s in dataset and sheet' % key)
+            log.info('%s in dataset and sheet', key)
             continue
         orphans.append(key)
-    print('%s orphans: %s' % (len(orphans), orphans))
+    log.info('%s orphans: %s', len(orphans), orphans)
     for key in orphans:
         del dataset[key]
 
     return dataset
 
 
-def upload(dataset, filename):
+def upload(dataset, filename, dry_run):
     data = {
         'type': 'FeatureCollection',
         'features': [dataset[key] for key in dataset]
     }
-    s3 = boto3.resource('s3')
-    print(s3.Object('ragtag-marchon', filename).put(
-        Body=json.dumps(data, indent=2),
-        ContentType='application/json',
-        ACL='public-read',
-        Expires=(datetime.now() + timedelta(hours=6))
-    ))
+    if dry_run:
+        print(data)
+    else:
+        s3 = boto3.resource('s3')
+        log.info(s3.Object('ragtag-marchon', filename).put(
+            Body=json.dumps(data, indent=2),
+            ContentType='application/json',
+            ACL='public-read',
+            Expires=(datetime.now() + timedelta(hours=6))
+        ))
 
 
 def resize_photo(service, file):
-    print('resizing %s' % file['name'])
+    log.info('resizing %s', file['name'])
     width = 600
     file_ext = file['mimeType'].split('/')[1]
     filename = '%s.%s' % (file['id'], file_ext.lower())
@@ -169,7 +175,7 @@ def resize_photo(service, file):
     resized.save(img_bytes, format=file_ext.upper())
     img_bytes.seek(0)
     s3 = boto3.resource('s3')
-    print(s3.Object('ragtag-marchon', filename).put(
+    log.info(s3.Object('ragtag-marchon', filename).put(
         Body=img_bytes.read(),
         ContentType=file['mimeType'],
         ACL='public-read',
@@ -180,7 +186,7 @@ def resize_photo(service, file):
 
 def update_photos(dataset):
     # map filename to affiliate key
-    print('\nupdate photos')
+    log.info('\nupdate photos')
     photos = {}
     for key in dataset:
         props = dataset[key]['properties']
@@ -203,38 +209,39 @@ def update_photos(dataset):
     for photo in file_list:
         key = photos.get(photo['name'], None)
         if not key:
-            print('%s not referenced from dataset' % photo['name'])
+            log.warning('%s not referenced from dataset', photo['name'])
             continue
         if dataset[key]['properties'].get('photoUrl', None):
             continue
         try:
             url = 'https://s3.amazonaws.com/ragtag-marchon/%s' % resize_photo(service, photo)
-            print('%s saved to %s' % (photo['name'], url))
+            log.info('%s saved to %s', photo['name'], url)
             dataset[key]['properties']['photoUrl'] = url
         except:
-            print('ERROR resizing photo')
+            log.error('ERROR resizing photo')
             traceback.print_exc()
 
 
-def lambda_handler(event=None, context=None):
+def lambda_handler(event=None, context=None, dry_run=False):
     sheet = get_sheet_data()
-    print('sheet=%s\n' % sheet)
+    log.info('sheet=%s\n', sheet)
     dataset = get_geojson('affiliates.json')
-    print('dataset=%s\n' % dataset)
+    log.info('dataset=%s\n', dataset)
     keys = sheet.keys() - dataset.keys()
     if keys:
         get_geodata(sheet, keys)
     merge_data(sheet, dataset)
     update_photos(dataset)
-    upload(dataset, 'affiliates.json')
+    upload(dataset, 'affiliates.json', dry_run)
 
-def events_lambda_handler(event=None, context=None):
+
+def events_lambda_handler(event=None, context=None, dry_run=False):
     sheet = get_event_data()
-    print('sheet=%s\n' % sheet)
+    log.info('sheet=%s\n', sheet)
     dataset = get_geojson('events.json')
-    print('dataset=%s\n' % dataset)
+    log.info('dataset=%s\n', dataset)
     keys = sheet.keys() - dataset.keys()
     if keys:
         get_geodata(sheet, keys, countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
     merge_data(sheet, dataset)
-    upload(dataset, 'events.json')
+    upload(dataset, 'events.json', dry_run)
