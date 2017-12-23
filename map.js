@@ -60,11 +60,11 @@ const app = new Vue({
       geojson.then((data) => {
         const affiliate = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, feature => feature.properties.affiliate),
+          features: _.filter(data.features, feature => feature.properties.source === 'events' && feature.properties.affiliate),
         };
         const other = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, feature => !feature.properties.affiliate),
+          features: _.filter(data.features, feature => feature.properties.source === 'events' && !feature.properties.affiliate),
         };
 
         this.features = data.features;
