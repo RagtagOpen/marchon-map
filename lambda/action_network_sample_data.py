@@ -1,3 +1,4 @@
+#yapf:disable
 def make_test_email():
     return {
         'address': 'LP10011@gmail.com',
@@ -54,18 +55,14 @@ def make_test_organizer():
                 'https://actionnetwork.org/api/v2/people/38cc1710-4a71-4225-9607-e8269758e051'
             }
         },
-        'created_date':
-        '2016-11-16T14:09:15Z',
+        'created_date': '2016-11-16T14:09:15Z',
         'custom_fields': {},
         'email_addresses': [make_test_email()],
-        'family_name':
-        'Person',
-        'given_name':
-        'Larry',
+        'family_name': 'Person',
+        'given_name': 'Larry',
         'identifiers': ['action_network:38cc1710-4a71-4225-9607-e8269758e051'],
         'languages_spoken': ['en'],
-        'modified_date':
-        '2017-12-22T18:55:05Z',
+        'modified_date': '2017-12-22T18:55:05Z',
         'postal_addresses': [{
             'country': 'US',
             'locality': 'New York',
@@ -115,23 +112,18 @@ def make_test_event():
                         'https://actionnetwork.org/api/v2/people/38cc1710-4a71-4225-9607-e8269758e051'
                     }
                 },
-                'created_date':
-                '2016-11-16T14:09:15Z',
+                'created_date': '2016-11-16T14:09:15Z',
                 'custom_fields': {},
                 'email_addresses': [{
                     'address': 'LP10011@gmail.com',
                     'primary': True,
                     'status': 'subscribed'
                 }],
-                'family_name':
-                'Person',
-                'given_name':
-                'Larry',
-                'identifiers':
-                ['action_network:38cc1710-4a71-4225-9607-e8269758e051'],
+                'family_name': 'Person',
+                'given_name': 'Larry',
+                'identifiers': ['action_network:38cc1710-4a71-4225-9607-e8269758e051'],
                 'languages_spoken': ['en'],
-                'modified_date':
-                '2017-12-22T18:55:05Z',
+                'modified_date': '2017-12-22T18:55:05Z',
                 'postal_addresses': [{
                     'country': 'US',
                     'locality': 'New '
@@ -184,42 +176,25 @@ def make_test_event():
         },
         'action_network:event_campaign_id':
         '9e5b2755-9161-446e-93a4-78ac0ef6a206',
-        'action_network:hidden':
-        False,
-        'browser_url':
-        'https://actionnetwork.org/events/after-party',
-        'created_date':
-        '2017-12-22T21:38:51Z',
-        'description':
-        '<p>Test House Party Event</p>',
-        'guests_can_invite_others':
-        True,
+        'action_network:hidden': False,
+        'browser_url': 'https://actionnetwork.org/events/after-party',
+        'created_date': '2017-12-22T21:38:51Z',
+        'description': '<p>Test House Party Event</p>',
+        'guests_can_invite_others': True,
         'identifiers': ['action_network:5450dbe7-99c7-4b8e-a7a3-9b2db76cc41d'],
-        'instructions':
-        '<p>Thanks for joining our '
-        'event</p>',
-        'location':
-        make_test_location(),
-        'modified_date':
-        '2017-12-22T21:47:19Z',
-        'name':
-        'Larry\'s party',
-        'origin_system':
-        'Action Network',
+        'instructions': '<p>Thanks for joining our event</p>',
+        'location': make_test_location(),
+        'modified_date': '2017-12-22T21:47:19Z',
+        'name': 'Larry\'s party',
+        'origin_system': 'Action Network',
         'reminders': [{
             'method': 'email',
             'minutes': 1440
         }],
-        'start_date':
-        '2018-01-20T18:00:00Z',
-        'status':
-        'confirmed',
-        'title':
-        'After party',
-        'total_accepted':
-        1,
-        'transparence':
-        'opaque',
-        'visibility':
-        'public'
+        'start_date': '2018-01-20T18:00:00Z',
+        'status': 'confirmed',
+        'title': 'After party',
+        'total_accepted': 1,
+        'transparence': 'opaque',
+        'visibility': 'public'
     }

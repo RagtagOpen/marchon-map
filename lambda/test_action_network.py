@@ -1,8 +1,7 @@
 import pprint
 
 from action_network import (convert_event, get_email_address_from_organizer,
-                            get_event_name, get_events_from_events_campaign,
-                            get_object_or_empty_dict, get_organizer,
+                            get_events_from_events_campaign, get_organizer,
                             make_location)
 from action_network_sample_data import make_test_event, make_test_location
 
@@ -31,36 +30,6 @@ def test_make_location_not_us():
     inner_loc['country'] = 'New Zealand'
     location = make_location({'location': inner_loc})
     assert location == 'New York, New Zealand'
-
-
-def test_get_object_or_empty_dict_empty_dict():
-    x = get_object_or_empty_dict('foo', {})
-    assert x == {}
-
-
-def test_get_object_or_empty_dict_none_dict():
-    x = get_object_or_empty_dict('foo', {'foo': None})
-    assert x == {}
-
-
-def test_get_object_or_empty_dict():
-    x = get_object_or_empty_dict('foo', {'foo': {'bar': 'baz'}})
-    assert x == {'bar': 'baz'}
-
-
-def test_get_event_name_name():
-    x = get_event_name({'name': 'party', 'title': 'afterparty'})
-    assert x == 'party'
-
-
-def test_get_event_name_title():
-    x = get_event_name({'title': 'afterparty'})
-    assert x == 'afterparty'
-
-
-def test_get_event_name_neither():
-    x = get_event_name({})
-    assert not x
 
 
 def test_get_organizer():
@@ -135,8 +104,10 @@ def test_get_email_address():
 
 def test_convert_event():
     x = convert_event(make_test_event())
-    assert 'properties' in x
-    p = x['properties']
+    assert '10025::Larry Person' in x
+    converted_event = x['10025::Larry Person']
+    assert 'properties' in converted_event
+    p = converted_event['properties']
     assert p['source'] == 'actionnetwork'
     assert not p['affiliate']
     assert p['name'] == 'Larry\'s party'

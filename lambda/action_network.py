@@ -6,41 +6,35 @@ import requests
 from dateutil import parser
 
 log = logging.getLogger(__name__)
-
-
-def get_object_or_empty_dict(key: str, event: Dict) -> Dict:
-    location = event.get(key)
-    if not location:
-        location = {}
-    return location
+log.setLevel(logging.DEBUG)
 
 
 def make_location(event: Dict) -> str:
-    location = get_object_or_empty_dict('location', event)
+    location = (event.get('location', {}) or {})
     if location.get('country', 'US') != 'US':
         return '{city}, {country}'.format(
             city=location.get('locality'), country=location.get('country'))
     return location.get('postal_code', '')
 
 
-def get_event_name(event: Dict) -> str:
-    name = event.get('name', None)
-    if not name:
-        name = event.get('title', '')
-    return name
-
-
 def get_organizer(event: Dict) -> Dict:
-    return get_object_or_empty_dict('osdi:organizer',
-                                    get_object_or_empty_dict(
-                                        '_embedded', event))
+    embedded = event.get('_embedded') or {}
+    return embedded.get('osdi:organizer') or {}
 
 
 def get_contact_name(event: Dict) -> Dict:
     organizer = get_organizer(event)
     given_name = organizer.get('given_name')
     family_name = organizer.get('family_name')
-    return ' '.join([given_name, family_name])
+
+    name = ''
+    if given_name:
+        name = given_name
+    if given_name and family_name:
+        name += ' '
+    if family_name:
+        name += family_name
+    return name
 
 
 def get_email_address_from_organizer(organizer: Dict) -> str:
@@ -61,11 +55,9 @@ def get_email_address(event: Dict) -> str:
 
 
 def get_events_from_events_campaign(return_events=None,
-                                    page=None) -> Dict[str, Dict]:
+                                    page=1) -> Dict[str, Dict]:
     if not return_events:
         return_events = {}
-    if not page:
-        page = 1
 
     log.info('\nget_events_from events_campaign (action network) -- page %d',
              page)
@@ -84,14 +76,14 @@ def get_events_from_events_campaign(return_events=None,
             response.status_code)
         return {}
 
-    log.info('\nsuccess! get_events_from events_campaign (action network) -- page %d',
-             page)
+    log.info(
+        '\nsuccess! get_events_from events_campaign (action network) -- page %d',
+        page)
 
     response_json = response.json()
     events = response_json.get('_embedded', {}).get('osdi:events', {})
     for event in events:
-        converted_event = convert_event(event)
-        return_events[make_key(converted_event)] = converted_event
+        return_events.update(convert_event(event))
 
     if response_json.get('total_pages', page) > page:
         get_events_from_events_campaign(return_events, page + 1)
@@ -99,40 +91,33 @@ def get_events_from_events_campaign(return_events=None,
     return return_events
 
 
-def make_key(converted_event: Dict) -> str:
+def make_key(properties: Dict) -> str:
     return '{location}::{host}'.format(
-        location=converted_event['properties']['location'],
-        host=converted_event['properties']['host'])
+        location=properties.get('location', ''),
+        host=properties.get('host', ''))
 
 
 def convert_event(event: Dict) -> Dict:
+    contact_name = get_contact_name(event)
+    #yapf:disable
     properties = {
-        'source':
-        'actionnetwork',
-        'affiliate':
-        False,
-        'name':
-        get_event_name(event),
-        'eventDate':
-        parser.parse(event.get('start_date',
-                               '1/20/2018')).strftime('%-m/%-d/%Y'),
-        'eventLink':
-        event.get('browser_url', ''),
-        'location':
-        make_location(event),
-        'contactEmail':
-        get_email_address(event),
-        'host':
-        get_contact_name(event),
-        'contactName':
-        get_contact_name(event),
-        'facebook':
-        '',
-        'instagram':
-        '',
-        'twitter':
-        '',
+        'source': 'actionnetwork',
+        'affiliate': False,
+        'name': event.get('name') or event.get('title') or '',
+        'eventDate': parser.parse(event.get(
+            'start_date', '1/20/2018')).strftime('%-m/%-d/%Y'),
+        'eventLink': event.get('browser_url', ''),
+        'location': make_location(event),
+        'contactEmail': get_email_address_from_organizer(get_organizer(event)),
+        'host': contact_name,
+        'contactName': contact_name,
+        'facebook': '',
+        'instagram': '',
+        'twitter': '',
     }
+    #yapf:enable
     return {
-        'properties': properties,
+        make_key(properties): {
+            'properties': properties,
+        }
     }

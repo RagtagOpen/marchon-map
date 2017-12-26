@@ -1,9 +1,9 @@
+from datetime import datetime, timedelta
 import io
 import json
 import logging
 import os
 import traceback
-from datetime import datetime, timedelta
 from typing import Dict
 
 import boto3
@@ -113,20 +113,13 @@ def get_sheet_data():
     return read_sheet('Sheet1!A1:S', fields, 1, True)
 
 
-def get_action_network_events() -> Dict:
-    log.info('\nstart get Action Network events')
-    return_events = get_events_from_events_campaign()
-    log.info('\ngot %d events from action network', len(return_events))
-    return return_events
-
-
 def get_geojson(url):
     log.info('\nload geojson')
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
         if feature['properties'].get('source', '') == 'actionnetwork':
-            key = make_key(feature)
+            key = make_key(feature['properties'])
         else:
             key = feature['properties']['location']
         features[key] = feature
@@ -249,7 +242,7 @@ def update_photos(dataset):
         # throws errors about file_cache is unavailable when using oauth2client
         # but seems to work fine
         pass
-    query = '"%s" in parents' % os.environ['PHOTO_FOLDER_ID']
+    query = "'%s' in parents" % os.environ['PHOTO_FOLDER_ID']
     '''
     array of
     {'kind': 'drive#file', 'id': 'abc', 'name': 'photo.jpg', 'mimeType': 'image/jpeg'}
@@ -289,7 +282,9 @@ def events_lambda_handler(event=None, context=None, dry_run=False):
     sheet = get_event_data()
     log.info('sheet=%s\n', sheet)
 
-    action_network_events = get_action_network_events()
+    log.info('\nstart get Action Network events')
+    action_network_events = get_events_from_events_campaign()
+    log.info('\ngot %d events from action network', len(action_network_events))
     log.info('action_network_events=%s\n', action_network_events)
 
     all_events = {**sheet, **action_network_events}

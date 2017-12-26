@@ -12,9 +12,6 @@ import marchon
 '''
 
 
-# print output instead of saving to S3
-def call_marchon_events_lambda_handler():
-    marchon.events_lambda_handler(event=None, context=None, dry_run=True)
 
 
 def test_get_geojson():
@@ -62,4 +59,5 @@ def test_get_location_from_key():
 
 
 if __name__ == '__main__':
-    call_marchon_events_lambda_handler()
+    # print output instead of saving to S3
+    marchon.events_lambda_handler(event=None, context=None, dry_run=True)
