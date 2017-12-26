@@ -1,6 +1,5 @@
 import logging
 import os
-import pprint
 from typing import Dict
 
 import requests
@@ -131,9 +130,3 @@ def convert_event(event: Dict) -> Dict:
     return {
         'properties': properties,
     }
-
-
-if __name__ == '__main__':
-    the_events = get_events_from_events_campaign()
-    pp = pprint.PrettyPrinter()
-    pp.pprint(the_events)

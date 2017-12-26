@@ -1,7 +1,10 @@
+import pprint
+
 from action_network import (convert_event, get_email_address_from_organizer,
-                            get_event_name, get_object_or_empty_dict,
-                            get_organizer, make_location)
-from action_network_sample_data import make_test_location, make_test_event
+                            get_event_name, get_events_from_events_campaign,
+                            get_object_or_empty_dict, get_organizer,
+                            make_location)
+from action_network_sample_data import make_test_event, make_test_location
 
 
 def test_make_location_everything():
@@ -143,3 +146,9 @@ def test_convert_event():
     assert p['contactEmail'] == 'LP10011@gmail.com'
     assert p['host'] == 'Larry Person'
     assert p['contactName'] == 'Larry Person'
+
+
+if __name__ == '__main__':
+    the_events = get_events_from_events_campaign()
+    pp = pprint.PrettyPrinter()
+    pp.pprint(the_events)
