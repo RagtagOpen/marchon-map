@@ -4,6 +4,7 @@ import logging
 import os
 import traceback
 from datetime import datetime, timedelta
+from typing import Dict
 
 import boto3
 import requests
@@ -15,10 +16,13 @@ from action_network import get_events_from_events_campaign, make_key
 
 log = logging.getLogger(__name__)
 
+
 def read_sheet(sheet_range, fields, location_idx, affiliate):
-    log.info('\nload sheet %s with %s', os.environ['SHEET_ID'], os.environ['GOOGLE_API_KEY']);
+    log.info('\nload sheet %s with %s', os.environ['SHEET_ID'],
+             os.environ['GOOGLE_API_KEY'])
     try:
-        service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'])
+        service = build(
+            'sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'])
     except:
         # throws errors about file_cache is unavailable when using oauth2client
         # but seems to work fine
@@ -45,7 +49,8 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
         # skip if no location; nothing to map
         if row[location_idx]:
             rows[row[location_idx].strip()] = {'properties': props}
-            log.debug('row %s\t%s\t%s', len(rows) + 1, props['name'], props['location'])
+            log.debug('row %s\t%s\t%s',
+                      len(rows) + 1, props['name'], props['location'])
         else:
             log.warning('WARNING\tskipping %s: no location', (props['name']))
     log.info('read %s rows from sheet', len(rows))
@@ -59,15 +64,26 @@ def get_event_data():
     9 Twitter 10 Insta
     '''
     # keep these fields
-    fields = {'name': 0, 'eventDate': 1, 'eventLink': 2, 'location': 3, 'host': 4,
-              'affiliate': 5, 'contactName': 6, 'contactEmail': 7, 'facebook': 8,
-              'twitter': 9, 'instagram': 10}
+    fields = {
+        'name': 0,
+        'eventDate': 1,
+        'eventLink': 2,
+        'location': 3,
+        'host': 4,
+        'affiliate': 5,
+        'contactName': 6,
+        'contactEmail': 7,
+        'facebook': 8,
+        'twitter': 9,
+        'instagram': 10
+    }
     sheet = read_sheet('Sheet1!A1:K', fields, 3, False)
     # add default name
     for loc in sheet:
         if not sheet[loc]['properties']['name']:
             sheet[loc]['properties']['name'] = '%s Event' % loc
     return sheet
+
 
 def get_sheet_data():
     '''
@@ -78,14 +94,30 @@ def get_sheet_data():
      16 Event Link, 17 Photo, 18 About
     '''
     # keep these fields
-    fields = {'name': 0, 'location': 1, 'contactName': 3, 'contactEmail': 5,
-              'facebook': 9, 'twitter': 10, 'instagram': 11, 'other': 12,
-              'website': 13, 'event': 14, 'eventDate': 15, 'eventLink': 16,
-              'photo': 17, 'about': 18}
+    fields = {
+        'name': 0,
+        'location': 1,
+        'contactName': 3,
+        'contactEmail': 5,
+        'facebook': 9,
+        'twitter': 10,
+        'instagram': 11,
+        'other': 12,
+        'website': 13,
+        'event': 14,
+        'eventDate': 15,
+        'eventLink': 16,
+        'photo': 17,
+        'about': 18
+    }
     return read_sheet('Sheet1!A1:S', fields, 1, True)
 
-def get_action_network_events():
-    return get_events_from_events_campaign()
+
+def get_action_network_events() -> Dict:
+    log.info('\nstart get Action Network events')
+    return_events = get_events_from_events_campaign()
+    log.info('\ngot %d events from action network', len(return_events))
+    return return_events
 
 
 def get_geojson(url):
@@ -93,7 +125,7 @@ def get_geojson(url):
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
-        if feature['properties'].get('source','') == 'actionnetwork':
+        if feature['properties'].get('source', '') == 'actionnetwork':
             key = make_key(feature)
         else:
             key = feature['properties']['location']
@@ -102,9 +134,10 @@ def get_geojson(url):
     return features
 
 
-def get_location_from_key(key:str) -> str:
+def get_location_from_key(key: str) -> str:
     parts = key.split('::', 1)
     return parts[0]
+
 
 def get_geodata(sheet, keys, countries=None):
     # in spreadsheet but not GeoJSON
@@ -113,8 +146,10 @@ def get_geodata(sheet, keys, countries=None):
     geocoder = Geocoder()
     for key in keys:
         # San Jose, CA doesn't return results
-        response = geocoder.forward(get_location_from_key(key).replace(', CA', ', California'),
-            limit=1, country=countries).geojson()
+        response = geocoder.forward(
+            get_location_from_key(key).replace(', CA', ', California'),
+            limit=1,
+            country=countries).geojson()
         if 'features' in response and response['features']:
             feature = response['features'][0]
             log.info('geocode %s\n\t%s', key, feature)
@@ -166,12 +201,12 @@ def upload(dataset, filename, dry_run):
         print(data)
     else:
         s3 = boto3.resource('s3')
-        log.info(s3.Object('ragtag-marchon', filename).put(
-            Body=json.dumps(data, indent=2),
-            ContentType='application/json',
-            ACL='public-read',
-            Expires=(datetime.now() + timedelta(hours=6))
-        ))
+        log.info(
+            s3.Object('ragtag-marchon', filename).put(
+                Body=json.dumps(data, indent=2),
+                ContentType='application/json',
+                ACL='public-read',
+                Expires=(datetime.now() + timedelta(hours=6))))
 
 
 def resize_photo(service, file):
@@ -184,16 +219,16 @@ def resize_photo(service, file):
     pct = width / float(img.size[0])
     height = int((float(img.size[1]) * float(pct)))
     resized = img.resize((width, height), Image.ANTIALIAS)
-    img_bytes= io.BytesIO()
+    img_bytes = io.BytesIO()
     resized.save(img_bytes, format=file_ext.upper())
     img_bytes.seek(0)
     s3 = boto3.resource('s3')
-    log.info(s3.Object('ragtag-marchon', filename).put(
-        Body=img_bytes.read(),
-        ContentType=file['mimeType'],
-        ACL='public-read',
-        Expires=(datetime.now() + timedelta(hours=24*7))
-    ))
+    log.info(
+        s3.Object('ragtag-marchon', filename).put(
+            Body=img_bytes.read(),
+            ContentType=file['mimeType'],
+            ACL='public-read',
+            Expires=(datetime.now() + timedelta(hours=24 * 7))))
     return filename
 
 
@@ -208,7 +243,8 @@ def update_photos(dataset):
             continue
         photos[props['photo']] = key
     try:
-        service = build('drive', 'v3', developerKey=os.environ['GOOGLE_API_KEY'])
+        service = build(
+            'drive', 'v3', developerKey=os.environ['GOOGLE_API_KEY'])
     except:
         # throws errors about file_cache is unavailable when using oauth2client
         # but seems to work fine
@@ -227,7 +263,8 @@ def update_photos(dataset):
         if dataset[key]['properties'].get('photoUrl', None):
             continue
         try:
-            url = 'https://s3.amazonaws.com/ragtag-marchon/%s' % resize_photo(service, photo)
+            url = 'https://s3.amazonaws.com/ragtag-marchon/%s' % resize_photo(
+                service, photo)
             log.info('%s saved to %s', photo['name'], url)
             dataset[key]['properties']['photoUrl'] = url
         except:
@@ -261,6 +298,9 @@ def events_lambda_handler(event=None, context=None, dry_run=False):
     log.info('dataset=%s\n', dataset)
     keys = all_events.keys() - dataset.keys()
     if keys:
-        get_geodata(all_events, keys, countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
+        get_geodata(
+            all_events,
+            keys,
+            countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
     merge_data(all_events, dataset)
     upload(dataset, 'events.json', dry_run)

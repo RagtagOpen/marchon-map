@@ -67,6 +67,9 @@ def get_events_from_events_campaign(return_events=None,
     if not page:
         page = 1
 
+    log.info('\nget_events_from events_campaign (action network) -- page %d',
+             page)
+
     response = requests.get(
         'https://actionnetwork.org/api/v2/event_campaigns/{event_campaign_id}/events?page={page}'.
         format(
@@ -80,6 +83,9 @@ def get_events_from_events_campaign(return_events=None,
             'ERROR\tResponse code %d received from https://actionnetwork.org/api/v2/event_campaigns',
             response.status_code)
         return {}
+
+    log.info('\nsuccess! get_events_from events_campaign (action network) -- page %d',
+             page)
 
     response_json = response.json()
     events = response_json.get('_embedded', {}).get('osdi:events', {})
