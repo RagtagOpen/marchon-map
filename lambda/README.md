@@ -24,7 +24,7 @@ run `python test_events.py > ../events.json` to save
 ## reference
 
 [Google API](https://developers.google.com/sheets/api/quickstart/python)
-[Action Network API]https://actionnetwork.org/docs/v2/
+[Action Network API](https://actionnetwork.org/docs/v2/)
 
 Mapbox APIs
   - [datasets](https://github.com/mapbox/mapbox-sdk-py/blob/master/docs/datasets.md#datasets)
