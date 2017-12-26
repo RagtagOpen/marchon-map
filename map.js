@@ -1,5 +1,9 @@
 const mapjs = document.getElementById('mapjs');
+// pegasus for loading json data in parallel with other scripts.
+// For testing, you may want to  create a testdata.json file, and
+// use that instead. Beware of aggressive caching by chrome.
 const geojson = pegasus(`https://s3.amazonaws.com/ragtag-marchon/${mapjs.getAttribute('data-filename')}`);
+// const geojson = pegasus('/testdata.json');
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
 
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
@@ -58,13 +62,21 @@ const app = new Vue({
       // load GeoJSON, then pass to Mapbox
       // Mapbox won't share if it loads the data: https://github.com/mapbox/mapbox-gl-js/issues/1762
       geojson.then((data) => {
-        const affiliate = {
+        const sourceActionnetwork = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, feature => feature.properties.affiliate),
+          features: _.filter(data.features, feature => feature.properties.source === 'actionnetwork'),
         };
-        const other = {
+        const sourceOther = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, feature => !feature.properties.affiliate),
+          features: _.filter(data.features, feature => feature.properties.source !== 'actionnetwork'),
+        };
+        const affiliateTrue = {
+          type: 'FeatureCollection',
+          features: _.filter(sourceOther.features, feature => feature.properties.affiliate),
+        };
+        const affiliateFalse = {
+          type: 'FeatureCollection',
+          features: _.filter(sourceOther.features, feature => !feature.properties.affiliate),
         };
 
         this.features = data.features;
@@ -80,13 +92,17 @@ const app = new Vue({
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
 
-        if (other.features.length) {
-          this.map.addSource('marchon-other-geojson', { type: 'geojson', data: other });
-          this.addLayer('marchon-other', 'marchon-other-geojson', 'star-15-red');
+        if (affiliateFalse.features.length) {
+          this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
+          this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', 'star-15-red');
         }
-        if (affiliate.features.length) {
-          this.map.addSource('marchon-affiliate-geojson', { type: 'geojson', data: affiliate });
-          this.addLayer('marchon-affiliate', 'marchon-affiliate-geojson', 'smallstar');
+        if (affiliateTrue.features.length) {
+          this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
+          this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', 'smallstar');
+        }
+        if (sourceActionnetwork.features.length) {
+          this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionnetwork });
+          this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
         }
       });
 
