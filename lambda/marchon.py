@@ -13,6 +13,7 @@ import requests
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(message)s')
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 def read_sheet(sheet_range, fields, location_idx, affiliate):
     log.info('\nload sheet %s with %s', os.environ['SHEET_ID'], os.environ['GOOGLE_API_KEY']);
@@ -150,7 +151,12 @@ def upload(dataset, filename, dry_run):
         'type': 'FeatureCollection',
         'features': [dataset[key] for key in dataset]
     }
+
+    if 'DRY_RUN' in os.environ:
+        log.info('\nDRY_RUN set in environment')
+        dry_run = True
     if dry_run:
+        log.info('\nthis is a DRY RUN; printing the results, not uploading')
         print(data)
     else:
         s3 = boto3.resource('s3')
