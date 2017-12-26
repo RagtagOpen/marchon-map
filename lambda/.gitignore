@@ -18,6 +18,9 @@ var/
 
 # Serverless directories
 .serverless
-
 node_modules/**
 package-lock.json
+
+test.py
+__pycache__
+
