@@ -1,15 +1,17 @@
-from datetime import datetime, timedelta
 import io
 import json
 import logging
 import os
 import traceback
+from datetime import datetime, timedelta
 
-from apiclient.discovery import build
 import boto3
+import requests
+from apiclient.discovery import build
 from mapbox import Geocoder
 from PIL import Image
-import requests
+
+from action_network import get_events_from_events_campaign, make_key
 
 log = logging.getLogger(__name__)
 
@@ -82,16 +84,27 @@ def get_sheet_data():
               'photo': 17, 'about': 18}
     return read_sheet('Sheet1!A1:S', fields, 1, True)
 
+def get_action_network_events():
+    return get_events_from_events_campaign()
+
 
 def get_geojson(url):
     log.info('\nload geojson')
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
-        features[feature['properties']['location']] = feature
+        if feature['properties'].get('source','') == 'actionnetwork':
+            key = make_key(feature)
+        else:
+            key = feature['properties']['location']
+        features[key] = feature
     log.info('read %s features', len(features))
     return features
 
+
+def get_location_from_key(key:str) -> str:
+    parts = key.split('::', 1)
+    return parts[0]
 
 def get_geodata(sheet, keys, countries=None):
     # in spreadsheet but not GeoJSON
@@ -100,7 +113,7 @@ def get_geodata(sheet, keys, countries=None):
     geocoder = Geocoder()
     for key in keys:
         # San Jose, CA doesn't return results
-        response = geocoder.forward(key.replace(', CA', ', California'),
+        response = geocoder.forward(get_location_from_key(key).replace(', CA', ', California'),
             limit=1, country=countries).geojson()
         if 'features' in response and response['features']:
             feature = response['features'][0]
@@ -238,10 +251,16 @@ def lambda_handler(event=None, context=None, dry_run=False):
 def events_lambda_handler(event=None, context=None, dry_run=False):
     sheet = get_event_data()
     log.info('sheet=%s\n', sheet)
+
+    action_network_events = get_action_network_events()
+    log.info('action_network_events=%s\n', action_network_events)
+
+    all_events = {**sheet, **action_network_events}
+
     dataset = get_geojson('events.json')
     log.info('dataset=%s\n', dataset)
-    keys = sheet.keys() - dataset.keys()
+    keys = all_events.keys() - dataset.keys()
     if keys:
-        get_geodata(sheet, keys, countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
-    merge_data(sheet, dataset)
+        get_geodata(all_events, keys, countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
+    merge_data(all_events, dataset)
     upload(dataset, 'events.json', dry_run)
