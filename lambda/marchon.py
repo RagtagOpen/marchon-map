@@ -11,6 +11,7 @@ from mapbox import Geocoder
 from PIL import Image
 import requests
 
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(message)s')
 log = logging.getLogger(__name__)
 
 def read_sheet(sheet_range, fields, location_idx, affiliate):
@@ -59,8 +60,8 @@ def get_event_data():
     # keep these fields
     fields = {'name': 0, 'eventDate': 1, 'eventLink': 2, 'location': 3, 'host': 4,
               'affiliate': 5, 'contactName': 6, 'contactEmail': 7, 'facebook': 8,
-              'twitter': 9, 'instagram': 10}
-    sheet = read_sheet('Sheet1!A1:K', fields, 3, False)
+              'twitter': 9, 'instagram': 10, 'motpLink': 12}
+    sheet = read_sheet('Sheet1!A1:M', fields, 3, False)
     # add default name
     for loc in sheet:
         if not sheet[loc]['properties']['name']:
