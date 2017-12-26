@@ -1,5 +1,5 @@
 const mapjs = document.getElementById('mapjs');
-const geojson = pegasus(`https://s3.amazonaws.com/ragtag-marchon/${mapjs.getAttribute('data-filename')}`);
+const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
 
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
@@ -11,6 +11,7 @@ const app = new Vue({
     map: null,
     popup: {},
     userLocation: null,
+
     mapLoaded: false,
     userMarker: null,
     features: [],
@@ -18,15 +19,19 @@ const app = new Vue({
 
   created: function created() {
     if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        this.userLocation = position.coords;
-        this.locationSrc = 'browser';
+      const _this = this;
+
+      navigator.geolocation.getCurrentPosition(function(position) {
+        _this.userLocation = position.coords;
+        _this.locationSrc = 'browser';
       });
     }
   },
 
   mounted: function mounted() {
     document.getElementById('mapApp').style.display = 'block';
+    const _this = this;
+
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/march-on/cj9nq97bw3oco2snohkuh423m',
@@ -44,30 +49,31 @@ const app = new Vue({
       country: countries,
     });
     this.map.addControl(this.geocoder);
-    this.geocoder.on('result', _.throttle((r) => {
+    this.geocoder.on('result', _.throttle(function(r) {
       if (r.result && r.result.center) {
-        this.userLocation = {
+        _this.userLocation = {
           latitude: r.result.center[1],
           longitude: r.result.center[0],
         };
-        this.locationSrc = 'search';
+        _this.locationSrc = 'search';
       }
     }, 100));
-    this.map.on('load', () => {
-      this.mapLoaded = true;
+    this.map.on('load', function() {
+      _this.mapLoaded = true;
       // load GeoJSON, then pass to Mapbox
       // Mapbox won't share if it loads the data: https://github.com/mapbox/mapbox-gl-js/issues/1762
-      geojson.then((data) => {
+      // TODO: IE11
+      geojson.then(function(data) {
         const affiliate = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, feature => feature.properties.affiliate),
+          features: _.filter(data.features, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
         };
         const other = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, feature => !feature.properties.affiliate),
+          features: _.filter(data.features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
         };
 
-        this.features = data.features;
+        _this.features = data.features;
         if (document.getElementById('affiliate')) {
           document.getElementById('affiliate').style.display = 'block';
         }
@@ -75,26 +81,27 @@ const app = new Vue({
         const lat = [55, 24.52];
         const lng = [-66.95, -124.77];
 
-        this.map.fitBounds([
+        _this.map.fitBounds([
           [_.min(lng), _.min(lat)], // sw
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
 
         if (other.features.length) {
-          this.map.addSource('marchon-other-geojson', { type: 'geojson', data: other });
-          this.addLayer('marchon-other', 'marchon-other-geojson', 'star-15-red');
+          _this.map.addSource('marchon-other-geojson', { type: 'geojson', data: other });
+          _this.addLayer('marchon-other', 'marchon-other-geojson', 'star-15-red');
         }
         if (affiliate.features.length) {
-          this.map.addSource('marchon-affiliate-geojson', { type: 'geojson', data: affiliate });
-          this.addLayer('marchon-affiliate', 'marchon-affiliate-geojson', 'smallstar');
+          _this.map.addSource('marchon-affiliate-geojson', { type: 'geojson', data: affiliate });
+          _this.addLayer('marchon-affiliate', 'marchon-affiliate-geojson', 'smallstar');
         }
       });
 
-      setTimeout(() => {
+      setTimeout(function() {
         const el = document.getElementsByClassName('mapboxgl-ctrl-attrib');
 
         if (el && el.length) {
-          el[0].innerHTML = `by <a style="text-decoration: underline" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ${el[0].innerHTML}`;
+          el[0].innerHTML = 'by <a style="text-decoration: underline" target="_blank" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ' +
+            el[0].innerHTML;
           console.log('attribution updated');
         }
       }, 200);
@@ -104,7 +111,7 @@ const app = new Vue({
   computed: {
     events: function events() {
       const now = moment();
-      const ev = this.features.map((feature) => {
+      const ev = this.features.map(function(feature) {
         const props = feature.properties;
 
         if (!props.eventDate) {
@@ -158,33 +165,37 @@ const app = new Vue({
   },
 
   methods: {
-    addLayer(layerId, source, icon) {
+    addLayer: function(layerId, source, icon) {
+      const _this = this;
+
       this.map.addLayer({
         id: layerId,
         type: 'symbol',
-        source,
+        source: source,
         layout: {
           'icon-image': icon,
           'icon-allow-overlap': true,
           'text-allow-overlap': true,
         },
       });
-      this.map.on('click', layerId, (e) => {
-        this.showFeature(e.features[0]);
-        this.showPopup(e.features[0]);
+      this.map.on('click', layerId, function(e) {
+        _this.showFeature(e.features[0]);
+        _this.showPopup(e.features[0]);
       });
-      this.map.on('mousemove', layerId, _.throttle(e => this.showFeature(e.features[0]), 100));
-      this.map.on('mouseenter', layerId, (e) => {
-        this.showPopup(e.features[0]);
+      this.map.on('mousemove', layerId, _.throttle(function(e) {
+        _this.showFeature(e.features[0]);
+      }, 100));
+      this.map.on('mouseenter', layerId, function(e) {
+        _this.showPopup(e.features[0]);
       });
-      this.map.on('mouseleave', layerId, (e) => {
+      this.map.on('mouseleave', layerId, function(e) {
         if (e.features && e.features.length) {
-          this.hidePopup(e.features[0]);
+          _this.hidePopup(e.features[0]);
         }
       });
     },
 
-    highlightSearch() {
+    highlightSearch: function() {
       const control = document.getElementsByClassName('mapboxgl-ctrl-geocoder');
 
       if (!control) {
@@ -212,21 +223,23 @@ const app = new Vue({
       }
     },
 
-    highlightClosest() {
+    highlightClosest: function() {
+      const _this = this;
+
       if (!this.features.length) {
         return;
       }
       const loc = this.userLocation;
-      const withDistance = this.features.map((feature) => {
+      const withDistance = this.features.map(function(feature) {
         const coords = feature.geometry.coordinates;
-        const distance = this.distance(loc.latitude, loc.longitude, coords[1], coords[0]);
+        const distance = _this.distance(loc.latitude, loc.longitude, coords[1], coords[0]);
 
         return {
-          feature,
-          distance,
+          feature: feature,
+          distance: distaince,
         };
       });
-      const closest = _.minBy(withDistance, d => d.distance);
+      const closest = _.minBy(withDistance, function(d) { return d.distance; });
 
       if (!this.userMarker) {
         const el = document.getElementById('userMarker');
@@ -242,7 +255,7 @@ const app = new Vue({
       this.showPopup(closest.feature);
     },
 
-    deg2rad: deg => deg * (Math.PI / 180),
+    deg2rad: function(deg) { return deg * (Math.PI / 180); },
 
     distance: function distance(lat1, lon1, lat2, lon2) {
       // distance in km
@@ -258,14 +271,18 @@ const app = new Vue({
     showFeature: function showFeature(feature) {
       const props = feature.properties;
 
-      props.mailto = `mailto:${props.contactEmail}`;
+      props.mailto = 'mailto:' + props.contactEmail;
       if (props.eventDate) {
-        props.eventMeta = this.events.find(ev => ev.location === props.location && !ev.past);
+        props.eventMeta = _.find(this.events, function(ev) {
+          return ev.location === props.location && !ev.past;
+        });
       }
       this.activeGroup = props;
     },
 
     showPopup: function showPopup(feature) {
+      const _this = this;
+
       console.log('show popup for ', feature.properties.location);
       if (this.popup) {
         this.popup.remove();
@@ -273,17 +290,17 @@ const app = new Vue({
       // draw popup immediately with name
       this.popup
         .setLngLat(feature.geometry.coordinates)
-        .setHTML(`<div id="popupContent"><b>${feature.properties.name}</b></div>`)
+        .setHTML('<div id="popupContent"><b>' + feature.properties.name + '</b></div>')
         .addTo(this.map);
       this.popupLocation = feature.properties.location;
       // update html when it's ready
       this.$nextTick(function popup() {
         // popup.setHTML doesn't update properly
-        this.popup.remove();
-        this.popup
+        _this.popup.remove();
+        _this.popup
           .setLngLat(feature.geometry.coordinates)
           .setHTML(document.getElementById('affiliateContent').innerHTML)
-          .addTo(this.map);
+          .addTo(_this.map);
       });
     },
 
