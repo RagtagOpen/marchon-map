@@ -110,6 +110,9 @@ def get_geojson(url):
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
+        # special handling for key for actionnetwork events allows
+        # for more than one event per locaion
+        # make_key builds a compound key of <location>::<host>
         if feature['properties'].get('source', '') == 'actionnetwork':
             key = make_key(feature['properties'])
         else:
@@ -132,6 +135,9 @@ def get_geodata(sheet, keys, countries=None):
     for key in keys:
         # San Jose, CA doesn't return results
         response = geocoder.forward(
+            # special handling for key for actionnetwork events allows
+            # for more than one event per locaion
+            # make_key builds a compound key of <location>::<host>
             get_location_from_key(key).replace(', CA', ', California'),
             limit=1,
             country=countries).geojson()

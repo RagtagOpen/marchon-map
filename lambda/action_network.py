@@ -117,6 +117,9 @@ def convert_event(event: Dict) -> Dict:
     }
     #yapf:enable
     return {
+        # special handling for key for actionnetwork events allows
+        # for more than one event per locaion
+        # make_key builds a compound key of <location>::<host>
         make_key(properties): {
             'properties': properties,
         }
