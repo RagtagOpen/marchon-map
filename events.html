@@ -64,6 +64,12 @@
           </div>
         </div>
       </div>
+      <div id="layerFilterControl" class="mapboxgl-ctrl">
+        <ragtag-layerfilter
+          :layers="mapLayers"
+          @layer-change="layerDisplayChange"
+        ></ragtag-layerfilter>
+      </div>
     </div>
     <div id="userMarker">
       <i class="fa fa-circle"></i>
