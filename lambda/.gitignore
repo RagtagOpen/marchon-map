@@ -2,3 +2,7 @@ test.py
 *.dist-info
 *.egg-info
 __pycache__
+
+.serverless
+node_modules
+package-lock.json
