@@ -2,6 +2,7 @@ import json
 
 import requests_mock
 
+from common import LocationHostKey
 import marchon
 '''
     set these in environment
@@ -16,8 +17,7 @@ def test_get_geojson():
     def response_callback(_, context):
         #yapf:disable
         features = {
-            'type':
-            'FeatureCollection',
+            'type': 'FeatureCollection',
             'features': [{
                 'properties': {
                     'source': 'events',
@@ -45,17 +45,8 @@ def test_get_geojson():
             text=response_callback)
         x = marchon.get_geojson('events.json')
         assert len(x) == 2
-        assert 'New Paltz, NY' in x
-        assert 'Des Moines, IA 50312::Mark Langgin' in x
-
-
-def test_get_location_from_key():
-    x = marchon.get_location_from_key('New York, NY 10025::Larry Person')
-    assert x == 'New York, NY 10025'
-    x = marchon.get_location_from_key('New York, NY 10025:Larry Person')
-    assert x == 'New York, NY 10025:Larry Person'
-    x = marchon.get_location_from_key('New York, NY 10025')
-    assert x == 'New York, NY 10025'
+        assert LocationHostKey('New Paltz, NY', 'March On Hudson Valley') in x
+        assert LocationHostKey('Des Moines, IA 50312', 'Mark Langgin') in x
 
 
 if __name__ == '__main__':
