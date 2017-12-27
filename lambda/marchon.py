@@ -287,15 +287,15 @@ def events_lambda_handler(event=None, context=None, dry_run=False):
     log.info('\ngot %d events from action network', len(action_network_events))
     log.info('action_network_events=%s\n', action_network_events)
 
-    all_events = {**sheet, **action_network_events}
+    sheet.update(action_network_events)
 
     dataset = get_geojson('events.json')
     log.info('dataset=%s\n', dataset)
-    keys = all_events.keys() - dataset.keys()
+    keys = sheet.keys() - dataset.keys()
     if keys:
         get_geodata(
-            all_events,
+            sheet,
             keys,
             countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
-    merge_data(all_events, dataset)
+    merge_data(sheet, dataset)
     upload(dataset, 'events.json', dry_run)
