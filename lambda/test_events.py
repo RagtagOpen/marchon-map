@@ -12,20 +12,19 @@ import marchon
 '''
 
 
-
-
 def test_get_geojson():
     def response_callback(_, context):
+        #yapf:disable
         features = {
-            "type":
-            "FeatureCollection",
-            "features": [{
-                "properties": {
-                    "source": "events",
-                    "location": "New Paltz, NY",
-                    "host": "March On Hudson Valley",
+            'type':
+            'FeatureCollection',
+            'features': [{
+                'properties': {
+                    'source': 'events',
+                    'location': 'New Paltz, NY',
+                    'host': 'March On Hudson Valley',
                 },
-                "type": "Feature"
+                'type': 'Feature'
             }, {
                 'properties': {
                     'source': 'actionnetwork',
@@ -36,6 +35,7 @@ def test_get_geojson():
                 }
             }]
         }
+        #yapf:enable
         context.status_code = 200
         return json.dumps(features)
 
