@@ -154,6 +154,8 @@ const app = new Vue({
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
 
+        // add the map layers to the map, and also to the vue mapLayers
+        // data. Not currently using initiallyChecked.
         if (affiliateFalse.features.length) {
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
           _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', 'star-15-red');
