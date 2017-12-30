@@ -326,7 +326,7 @@ const app = new Vue({
 
         return {
           feature: feature,
-          distance: distaince,
+          distance: distance,
         };
       });
       const closest = _.minBy(withDistance, function(d) { return d.distance; });
