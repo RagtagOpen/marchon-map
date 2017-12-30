@@ -165,6 +165,15 @@ nice to get that cleaned up. - Marion Newlevant */
   background-color: white;
 }
 
+/* the little images in the filter widget */
+.filter-widget img {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  position: relative;
+  bottom: 2px;
+}
+
 /* inspired by https://www.sitepoint.com/create-calendar-icon-html5-css3/ */
 time.icon
 {

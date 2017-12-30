@@ -18,7 +18,7 @@ mapboxgl.accessToken = mapjs.getAttribute('data-token');
 Vue.component('ragtag-layerfilter', {
   props: ['layers'],
   template: 
-'<div class="map-widget">' +
+'<div class="map-widget filter-widget">' +
 '  <template v-for="layer in layers">' +
 '    <div>' +
 '      <input' +
@@ -28,7 +28,7 @@ Vue.component('ragtag-layerfilter', {
 '        v-model="checkedLayers"' +
 '        @change="showHideLayers()"' +
 '      >' +
-'      <label for="layer.layerId">{{layer.label}}</label>' +
+'      <label for="layer.layerId"><img :src="\'assets/\'+layer.icon">{{layer.label}}</label>' +
 '    </div>' +
 '  </template>' +
 '</div>'
@@ -162,6 +162,7 @@ const app = new Vue({
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-false',
             label: 'Non Affiliates',
+            icon: 'star-15-red.svg',
             initiallyChecked: true,
           });
         }
@@ -171,6 +172,7 @@ const app = new Vue({
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-true',
             label: 'Affiliates',
+            icon: 'smallstar.svg',
             initiallyChecked: true,
           });
         }
@@ -180,6 +182,7 @@ const app = new Vue({
           _this.mapLayers.push({
             layerId: 'marchon-source-actionnetwork',
             label: 'Action Network',
+            icon: 'house.svg',
             initiallyChecked: true,
           });
         }
