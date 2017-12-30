@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import re
 import traceback
 from typing import Dict
 
@@ -117,7 +118,7 @@ def get_geodata(sheet, keys, countries=None):
     for key in keys:
         # San Jose, CA doesn't return results
         response = geocoder.forward(
-            key.location.replace(', CA', ', California'),
+            re.sub(r', CA$', ', California', key.location),
             limit=1,
             country=countries).geojson()
         if 'features' in response and response['features']:
