@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import re
 import traceback
 from typing import Dict
 
@@ -48,13 +49,17 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
                 if props[field] == 'N':
                     props[field] = False
         # skip if no location; nothing to map
-        if row[location_idx]:
-            rows[row[location_idx].strip()] = {'properties': props}
-            log.debug('row %s\t%s\t%s',
-                      len(rows) + 1, props['name'], props['location'])
-        else:
-            log.warning('WARNING\tskipping %s: no location', (props['name']))
-    log.info('read %s rows from sheet', len(rows))
+        try:
+            if row[location_idx]:
+                rows[row[location_idx].strip()] = {'properties': props}
+                log.debug('row %s\t%s\t%s',
+                          len(rows) + 1, props['name'], props['location'])
+            else:
+                log.warning('WARNING\tskipping %s: no location', (props['name']))
+        except IndexError:
+            log.warning('WARNING\tskipping %s: location column out of range',(props['name']))
+
+        log.info('read %s rows from sheet', len(rows))
     return rows
 
 
@@ -133,25 +138,24 @@ def get_geodata(sheet, keys, countries=None):
         countries = ['us', 'ca']
     geocoder = Geocoder()
     for key in keys:
+        location = sheet[key]['properties']['location']
+
         # San Jose, CA doesn't return results
         response = geocoder.forward(
-            # special handling for key for actionnetwork events allows
-            # for more than one event per locaion
-            # make_key builds a compound key of <location>::<host>
-            get_location_from_key(key).replace(', CA', ', California'),
+            re.sub(r', CA$', ', California', location),
             limit=1,
             country=countries).geojson()
         if 'features' in response and response['features']:
             feature = response['features'][0]
-            log.info('geocode %s\n\t%s', key, feature)
+            log.info('geocode %s\n\t%s', location, feature)
             if feature['relevance'] < 0.75:
-                log.warning('WARNING\terror geocoding %s', key)
+                log.warning('WARNING\terror geocoding %s', location)
                 continue
             sheet[key]['geometry'] = response['features'][0]['geometry']
         else:
             if key in sheet:
                 del sheet[key]
-            log.warning('WARNING\terror geocoding %s', key)
+            log.warning('WARNING\terror geocoding %s', location)
 
 
 def merge_data(sheet, dataset):
