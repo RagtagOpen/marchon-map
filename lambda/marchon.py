@@ -12,7 +12,8 @@ from apiclient.discovery import build
 from mapbox import Geocoder
 from PIL import Image
 
-from action_network import get_events_from_events_campaign, make_key
+from action_network import get_events_from_events_campaign
+from common import make_key
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(message)s')
 log = logging.getLogger(__name__)
@@ -48,12 +49,16 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
                 if props[field] == 'N':
                     props[field] = False
         # skip if no location; nothing to map
-        if row[location_idx]:
-            rows[row[location_idx].strip()] = {'properties': props}
-            log.debug('row %s\t%s\t%s',
-                      len(rows) + 1, props['name'], props['location'])
-        else:
-            log.warning('WARNING\tskipping %s: no location', (props['name']))
+        try:
+            if row[location_idx]:
+                rows[make_key(props)] = {'properties': props}
+                log.debug('row %s\t%s\t%s',
+                          len(rows) + 1, props['name'], props['location'])
+
+            else:
+                log.warning('WARNING\tskipping %s: no location', (props['name']))
+        except IndexError:
+            log.warning('WARNING\tskipping %s: location column out of range', (props['name']))
     log.info('read %s rows from sheet', len(rows))
     return rows
 
@@ -110,21 +115,10 @@ def get_geojson(url):
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
-        # special handling for key for actionnetwork events allows
-        # for more than one event per locaion
-        # make_key builds a compound key of <location>::<host>
-        if feature['properties'].get('source', '') == 'actionnetwork':
-            key = make_key(feature['properties'])
-        else:
-            key = feature['properties']['location']
+        key = make_key(feature['properties'])
         features[key] = feature
     log.info('read %s features', len(features))
     return features
-
-
-def get_location_from_key(key: str) -> str:
-    parts = key.split('::', 1)
-    return parts[0]
 
 
 def get_geodata(sheet, keys, countries=None):
@@ -135,10 +129,7 @@ def get_geodata(sheet, keys, countries=None):
     for key in keys:
         # San Jose, CA doesn't return results
         response = geocoder.forward(
-            # special handling for key for actionnetwork events allows
-            # for more than one event per locaion
-            # make_key builds a compound key of <location>::<host>
-            get_location_from_key(key).replace(', CA', ', California'),
+            sheet[key]['properties']['location'].strip().replace(', CA', ', California'),
             limit=1,
             country=countries).geojson()
         if 'features' in response and response['features']:
@@ -151,7 +142,7 @@ def get_geodata(sheet, keys, countries=None):
         else:
             if key in sheet:
                 del sheet[key]
-            log.warning('WARNING\terror geocoding %s', key)
+            log.warning('WARNING\terror geocoding %s', sheet[key]['properties']['location'])
 
 
 def merge_data(sheet, dataset):

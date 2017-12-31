@@ -45,17 +45,8 @@ def test_get_geojson():
             text=response_callback)
         x = marchon.get_geojson('events.json')
         assert len(x) == 2
-        assert 'New Paltz, NY' in x
+        assert 'New Paltz, NY::March On Hudson Valley' in x
         assert 'Des Moines, IA 50312::Mark Langgin' in x
-
-
-def test_get_location_from_key():
-    x = marchon.get_location_from_key('New York, NY 10025::Larry Person')
-    assert x == 'New York, NY 10025'
-    x = marchon.get_location_from_key('New York, NY 10025:Larry Person')
-    assert x == 'New York, NY 10025:Larry Person'
-    x = marchon.get_location_from_key('New York, NY 10025')
-    assert x == 'New York, NY 10025'
 
 
 if __name__ == '__main__':
