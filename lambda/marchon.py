@@ -36,7 +36,7 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
     empty = {}
     for field in fields:
         empty[field] = ''
-    for row in values[1:]:
+    for row in values[3:]:
         props = {'source': 'events', 'affiliate': affiliate}
         props.update(empty)
         for field in fields:
@@ -49,15 +49,12 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
                 if props[field] == 'N':
                     props[field] = False
         # skip if no location; nothing to map
-        try:
-            if row[location_idx]:
-                rows[row[location_idx].strip()] = {'properties': props}
-                log.debug('row %s\t%s\t%s',
-                          len(rows) + 1, props['name'], props['location'])
-            else:
-                log.warning('WARNING\tskipping %s: no location', (props['name']))
-        except IndexError:
-            log.warning('WARNING\tskipping %s: location column out of range',(props['name']))
+        if row[location_idx]:
+            rows[row[location_idx].strip()] = {'properties': props}
+            log.debug('row %s\t%s\t%s',
+                      len(rows) + 1, props['name'], props['location'])
+        else:
+            log.warning('WARNING\tskipping %s: no location', (props['name']))
 
         log.info('read %s rows from sheet', len(rows))
     return rows
