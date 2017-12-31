@@ -35,7 +35,11 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
     empty = {}
     for field in fields:
         empty[field] = ''
+    idx = 0
     for row in values[1:]:
+        if len(row) < location_idx:
+            log.info('skipping row %s; no location info' % idx)
+            continue
         props = {'source': 'events', 'affiliate': affiliate}
         props.update(empty)
         for field in fields:
@@ -54,6 +58,7 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
                       len(rows) + 1, props['name'], props['location'])
         else:
             log.warning('WARNING\tskipping %s: no location', (props['name']))
+        idx += 1
     log.info('read %s rows from sheet', len(rows))
     return rows
 
