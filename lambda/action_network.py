@@ -5,6 +5,8 @@ from typing import Dict
 import requests
 from dateutil import parser
 
+from common import make_key
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
@@ -91,12 +93,6 @@ def get_events_from_events_campaign(return_events=None,
     return return_events
 
 
-def make_key(properties: Dict) -> str:
-    return '{location}::{host}'.format(
-        location=properties.get('location', ''),
-        host=properties.get('host', ''))
-
-
 def convert_event(event: Dict) -> Dict:
     contact_name = get_contact_name(event)
     #yapf:disable
@@ -117,9 +113,6 @@ def convert_event(event: Dict) -> Dict:
     }
     #yapf:enable
     return {
-        # special handling for key for actionnetwork events allows
-        # for more than one event per locaion
-        # make_key builds a compound key of <location>::<host>
         make_key(properties): {
             'properties': properties,
         }

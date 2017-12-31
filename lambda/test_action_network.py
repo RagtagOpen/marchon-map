@@ -4,6 +4,7 @@ from action_network import (convert_event, get_email_address_from_organizer,
                             get_events_from_events_campaign, get_organizer,
                             make_location)
 from action_network_sample_data import make_test_event, make_test_location
+from common import LocationHostKey
 
 
 def test_make_location_everything():
@@ -104,8 +105,9 @@ def test_get_email_address():
 
 def test_convert_event():
     x = convert_event(make_test_event())
-    assert '10025::Larry Person' in x
-    converted_event = x['10025::Larry Person']
+    lhk = LocationHostKey('10025', 'Larry Person')
+    assert lhk in x
+    converted_event = x[lhk]
     assert 'properties' in converted_event
     p = converted_event['properties']
     assert p['source'] == 'actionnetwork'

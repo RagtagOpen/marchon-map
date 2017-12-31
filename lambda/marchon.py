@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import re
 import traceback
 from typing import Dict
 
@@ -12,7 +13,8 @@ from apiclient.discovery import build
 from mapbox import Geocoder
 from PIL import Image
 
-from action_network import get_events_from_events_campaign, make_key
+from action_network import get_events_from_events_campaign
+from common import make_key
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(message)s')
 log = logging.getLogger(__name__)
@@ -49,7 +51,7 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
                     props[field] = False
         # skip if no location; nothing to map
         if row[location_idx]:
-            rows[row[location_idx].strip()] = {'properties': props}
+            rows[make_key(props)] = {'properties': props}
             log.debug('row %s\t%s\t%s',
                       len(rows) + 1, props['name'], props['location'])
         else:
@@ -65,9 +67,11 @@ def get_event_data():
     9 Twitter 10 Insta
     '''
     # keep these fields
+    #yapf:disable
     fields = {'name': 0, 'eventDate': 1, 'eventLink': 2, 'location': 3, 'host': 4,
               'affiliate': 5, 'contactName': 6, 'contactEmail': 7, 'facebook': 8,
               'twitter': 9, 'instagram': 10, 'motpLink': 12}
+    #yapf:enable
     sheet = read_sheet('Sheet1!A1:M', fields, 3, False)
 
     # add default name
@@ -86,22 +90,12 @@ def get_sheet_data():
      16 Event Link, 17 Photo, 18 About
     '''
     # keep these fields
-    fields = {
-        'name': 0,
-        'location': 1,
-        'contactName': 3,
-        'contactEmail': 5,
-        'facebook': 9,
-        'twitter': 10,
-        'instagram': 11,
-        'other': 12,
-        'website': 13,
-        'event': 14,
-        'eventDate': 15,
-        'eventLink': 16,
-        'photo': 17,
-        'about': 18
-    }
+    #yapf:disable
+    fields = { 'name': 0, 'location': 1, 'contactName': 3, 'contactEmail': 5,
+               'facebook': 9, 'twitter': 10, 'instagram': 11, 'other': 12,
+               'website': 13, 'event': 14, 'eventDate': 15, 'eventLink': 16,
+               'photo': 17, 'about': 18 }
+    #yapf:enable
     return read_sheet('Sheet1!A1:S', fields, 1, True)
 
 
@@ -110,21 +104,10 @@ def get_geojson(url):
     resp = requests.get('https://s3.amazonaws.com/ragtag-marchon/%s' % url)
     features = {}
     for feature in resp.json()['features']:
-        # special handling for key for actionnetwork events allows
-        # for more than one event per locaion
-        # make_key builds a compound key of <location>::<host>
-        if feature['properties'].get('source', '') == 'actionnetwork':
-            key = make_key(feature['properties'])
-        else:
-            key = feature['properties']['location']
+        key = make_key(feature['properties'])
         features[key] = feature
     log.info('read %s features', len(features))
     return features
-
-
-def get_location_from_key(key: str) -> str:
-    parts = key.split('::', 1)
-    return parts[0]
 
 
 def get_geodata(sheet, keys, countries=None):
@@ -135,10 +118,7 @@ def get_geodata(sheet, keys, countries=None):
     for key in keys:
         # San Jose, CA doesn't return results
         response = geocoder.forward(
-            # special handling for key for actionnetwork events allows
-            # for more than one event per locaion
-            # make_key builds a compound key of <location>::<host>
-            get_location_from_key(key).replace(', CA', ', California'),
+            re.sub(r', CA$', ', California', key.location),
             limit=1,
             country=countries).geojson()
         if 'features' in response and response['features']:
