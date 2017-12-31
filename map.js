@@ -5,7 +5,6 @@ const mapjs = document.getElementById('mapjs');
 const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
 // const geojson = pegasus('/testdata.json');
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
-
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
 const app = new Vue({
@@ -76,7 +75,7 @@ const app = new Vue({
           type: 'FeatureCollection',
           features: _.filter(data.features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
         };
-        const sourceActionnetwork = {
+        const sourceActionNetwork = {
           type: 'FeatureCollection',
           features: _.filter(data.features, function(feature) { return feature.properties.source === 'actionnetwork'; }),
         };
@@ -102,8 +101,8 @@ const app = new Vue({
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
           _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', 'smallstar');
         }
-        if (sourceActionnetwork.features.length) {
-          _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionnetwork });
+        if (sourceActionNetwork.features.length && !_this.inIframe()) {
+          _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
           _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
         }
       });
@@ -177,6 +176,14 @@ const app = new Vue({
   },
 
   methods: {
+    inIframe: function() {
+      try {
+        return window.self !== window.top;
+      } catch (e) {
+        return true;
+      }
+    },
+
     addLayer: function(layerId, source, icon) {
       const _this = this;
 
