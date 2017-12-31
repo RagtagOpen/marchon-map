@@ -5,7 +5,6 @@ const mapjs = document.getElementById('mapjs');
 const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
 // const geojson = pegasus('/testdata.json');
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
-
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
 // for the layer filter, we have a vue component, which is managing
@@ -127,21 +126,21 @@ const app = new Vue({
       // Mapbox won't share if it loads the data: https://github.com/mapbox/mapbox-gl-js/issues/1762
       // TODO: IE11
       geojson.then(function(data) {
+        _this.features = data.features;
         // sort out our features into what will be our map layers
         const affiliateTrue = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
+          features: _.filter(_this.futureFeatures, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
         };
         const affiliateFalse = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
+          features: _.filter(_this.futureFeatures, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
         };
-        const sourceActionnetwork = {
+        const sourceActionNetwork = {
           type: 'FeatureCollection',
-          features: _.filter(data.features, function(feature) { return feature.properties.source === 'actionnetwork'; }),
+          features: _.filter(_this.futureFeatures, function(feature) { return feature.properties.source === 'actionnetwork'; }),
         };
 
-        _this.features = data.features;
         if (document.getElementById('affiliate')) {
           document.getElementById('affiliate').style.display = 'block';
         }
@@ -176,8 +175,8 @@ const app = new Vue({
             initiallyChecked: true,
           });
         }
-        if (sourceActionnetwork.features.length) {
-          _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionnetwork });
+        if (sourceActionNetwork.features.length && !_this.inIframe()) {
+          _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
           _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
           _this.mapLayers.push({
             layerId: 'marchon-source-actionnetwork',
@@ -201,9 +200,12 @@ const app = new Vue({
   },
 
   computed: {
-    events: function events() {
-      const now = moment();
-      const ev = this.features.map(function(feature) {
+    // the features that are in the future or the recent past (the ones we display).
+    // this is where we filter out the old stuff that doesn't show up anywhere on the
+    // map.
+    futureFeatures: function futureFeatures() {
+      const now = moment().subtract(3, 'days'); // recently passed dates are still 'current'
+      const ff = this.features.map(function(feature) {
         const props = feature.properties;
 
         if (!props.eventDate) {
@@ -215,6 +217,18 @@ const app = new Vue({
           return null;
         }
 
+        return feature;
+      });
+      return _.compact(ff);
+    },
+    // the events. This is a processed version of the futureFeatures, displayed on the
+    // popup.
+    events: function events() {
+      return this.futureFeatures.map(function(feature) {
+        const props = feature.properties;
+
+        const dt = moment(feature.properties.eventDate, 'MM/DD/YYYY');
+
         return {
           location: props.location,
           name: props.event,
@@ -222,12 +236,9 @@ const app = new Vue({
           weekday: dt.format('dddd'),
           month: dt.format('MMMM'),
           day: dt.format('D'),
-          past: dt.isBefore(now),
           link: props.eventLink,
         };
       });
-
-      return _.compact(ev);
     },
 
     sortedUpcomingEvents: function sortedEvents() {
@@ -257,6 +268,14 @@ const app = new Vue({
   },
 
   methods: {
+    inIframe: function() {
+      try {
+        return window.self !== window.top;
+      } catch (e) {
+        return true;
+      }
+    },
+
     addLayer: function(layerId, source, icon) {
       const _this = this;
 
@@ -367,7 +386,7 @@ const app = new Vue({
       props.mailto = 'mailto:' + props.contactEmail;
       if (props.eventDate) {
         props.eventMeta = _.find(this.events, function(ev) {
-          return ev.location === props.location && !ev.past;
+          return ev.location === props.location;
         });
       }
       this.activeGroup = props;
