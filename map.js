@@ -85,7 +85,9 @@ const app = new Vue({
       zoom: 3,
     });
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-    this.map.addControl(new LayerFilterControl(), 'top-left');
+    if (document.getElementById('layerFilterControl')) {
+      this.map.addControl(new LayerFilterControl(), 'top-left');
+    }
     this.popup = new mapboxgl.Popup({
       closeButton: true,
       closeOnClick: true,
