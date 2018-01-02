@@ -16,22 +16,7 @@ mapboxgl.accessToken = mapjs.getAttribute('data-token');
 // caught by the parent vue app, and processes the hiding and showing
 Vue.component('ragtag-layerfilter', {
   props: ['layers'],
-  template: 
-'<div class="map-widget filter-widget">' +
-'  <template v-for="layer in layers">' +
-'    <div>' +
-'      <input' +
-'        type="checkbox"' +
-'        :value="layer.layerId"' +
-'        :id="layer.layerId"' +
-'        v-model="checkedLayers"' +
-'        @change="showHideLayers()"' +
-'      >' +
-'      <label for="layer.layerId"><img :src="\'assets/\'+layer.icon">{{layer.label}}</label>' +
-'    </div>' +
-'  </template>' +
-'</div>'
-,
+  template: '#layerfilter-template',
   data: function() {
     return {
       // I would *really* like to figure out how to generate this
