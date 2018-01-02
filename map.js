@@ -196,6 +196,9 @@ const app = new Vue({
         const props = feature.properties;
 
         if (!props.eventDate) {
+          sourceFile = mapjs.getAttribute('data-filename');
+          if (sourceFile === 'affiliates.json')
+            return feature;
           return null;
         }
         const dt = moment(feature.properties.eventDate, 'MM/DD/YYYY');
