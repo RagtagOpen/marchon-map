@@ -295,10 +295,11 @@ def events_lambda_handler(event=None, context=None, dry_run=False):
     dataset = get_geojson('events.json')
     log.info('dataset=%s\n', dataset)
     keys = sheet.keys() - dataset.keys()
+    countries = os.environ.get('COUNTRIES', 'us,ca').split(',')
     if keys:
         get_geodata(
             sheet,
             keys,
-            countries=['us', 'ca', 'mx', 'gb', 'de', 'nz', 'zm', 'au', 'it'])
+            countries=countries)
     merge_data(sheet, dataset)
     upload(dataset, 'events.json', dry_run)
