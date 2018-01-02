@@ -156,6 +156,24 @@ h3 {
   width: auto;
 }
 
+/* if I set the layerFilterControl widget classes in the
+obvious way, it messes up the search widget. It would be
+nice to get that cleaned up. - Marion Newlevant */
+.map-widget {
+  border: 3px solid #EE354E;
+  padding: 1rem;
+  background-color: white;
+}
+
+/* the little images in the filter widget */
+.filter-widget img {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  position: relative;
+  bottom: 2px;
+}
+
 /* inspired by https://www.sitepoint.com/create-calendar-icon-html5-css3/ */
 time.icon
 {
