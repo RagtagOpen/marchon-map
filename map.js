@@ -7,6 +7,48 @@ const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAt
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
+// for the layer filter, we have a vue component, which is managing
+// a mapbox control which we define (https://www.mapbox.com/mapbox-gl-js/api/#icontrol)
+
+// this is the vue component - it is passed the layers, and it creates
+// checkbox for each layer. We model the checks with an array of
+// strings, and when a box changes, we emit 'layer-change', which is
+// caught by the parent vue app, and processes the hiding and showing
+Vue.component('ragtag-layerfilter', {
+  props: ['layers'],
+  template: '#layerfilter-template',
+  data: function() {
+    return {
+      // I would *really* like to figure out how to generate this
+      // initial list of checkedLayers from the layers that are
+      // passed into us, but I am just learning vue, and so far
+      // have failed. - Marion Newlevant
+      // Note that we get a javascript error if any of these layers
+      // don't actually exist.
+      checkedLayers: [
+        'marchon-affiliate-true',
+        'marchon-affiliate-false',
+        'marchon-source-actionnetwork',
+      ],
+    }
+  },
+  methods: {
+    showHideLayers: function() {
+      this.$emit('layer-change', this.checkedLayers);
+    }
+  },
+});
+
+// this is the mapbox control - it grabs the existing vue component
+// and uses that.
+function LayerFilterControl() {}
+LayerFilterControl.prototype.onAdd = function(map) {
+  this._map = map;
+  this._container = document.getElementById('layerFilterControl');
+  return this._container;
+};
+LayerFilterControl.prototype.onRemove = function() {};
+
 const app = new Vue({
   el: '#mapApp',
   data: {
@@ -18,6 +60,7 @@ const app = new Vue({
     mapLoaded: false,
     userMarker: null,
     features: [],
+    mapLayers: [], // data about all of the map layers
   },
 
   created: function created() {
@@ -42,6 +85,7 @@ const app = new Vue({
       zoom: 3,
     });
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    this.map.addControl(new LayerFilterControl(), 'top-left');
     this.popup = new mapboxgl.Popup({
       closeButton: true,
       closeOnClick: true,
@@ -63,11 +107,12 @@ const app = new Vue({
     }, 100));
     this.map.on('load', function() {
       _this.mapLoaded = true;
-      // load GeoJSON, then pass to Mapbox
+      // load GeoJSON, then pass to Mapbox (pegasus loading magic)
       // Mapbox won't share if it loads the data: https://github.com/mapbox/mapbox-gl-js/issues/1762
       // TODO: IE11
       geojson.then(function(data) {
         _this.features = data.features;
+        // sort out our features into what will be our map layers
         const affiliateTrue = {
           type: 'FeatureCollection',
           features: _.filter(_this.futureFeatures, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
@@ -93,17 +138,37 @@ const app = new Vue({
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
 
+        // add the map layers to the map, and also to the vue mapLayers
+        // data. Not currently using initiallyChecked.
         if (affiliateFalse.features.length) {
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
           _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', 'star-15-red');
+          _this.mapLayers.push({
+            layerId: 'marchon-affiliate-false',
+            label: 'Non Affiliates',
+            icon: 'star-15-red.svg',
+            initiallyChecked: true,
+          });
         }
         if (affiliateTrue.features.length) {
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
           _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', 'smallstar');
+          _this.mapLayers.push({
+            layerId: 'marchon-affiliate-true',
+            label: 'Affiliates',
+            icon: 'smallstar.svg',
+            initiallyChecked: true,
+          });
         }
         if (sourceActionNetwork.features.length && !_this.inIframe()) {
           _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
           _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
+          _this.mapLayers.push({
+            layerId: 'marchon-source-actionnetwork',
+            label: 'Action Network',
+            icon: 'house.svg',
+            initiallyChecked: true,
+          });
         }
       });
 
@@ -204,6 +269,7 @@ const app = new Vue({
         type: 'symbol',
         source: source,
         layout: {
+          'visibility': 'visible',
           'icon-image': icon,
           'icon-allow-overlap': true,
           'text-allow-overlap': true,
@@ -339,5 +405,17 @@ const app = new Vue({
       this.popup.remove();
       this.popupLocation = null;
     },
+
+    layerDisplayChange: function layerDisplayChange(layersToShow) {
+      // hide all the layers
+      for (var i = this.mapLayers.length - 1; i >= 0; i--) {
+        this.map.setLayoutProperty(this.mapLayers[i].layerId, 'visibility', 'none');
+      }
+      // show the ones we want to show
+      for (var i = layersToShow.length - 1; i >= 0; i--) {
+        this.map.setLayoutProperty(layersToShow[i], 'visibility', 'visible');
+        
+      }
+    }
   },
 });
