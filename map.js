@@ -111,21 +111,22 @@ const app = new Vue({
       _this.mapLoaded = true;
       // load GeoJSON, then pass to Mapbox (pegasus loading magic)
       // Mapbox won't share if it loads the data: https://github.com/mapbox/mapbox-gl-js/issues/1762
-      // TODO: IE11
       geojson.then(function(data) {
         _this.features = data.features;
+        // don't check for events on affiliate map; use all
+        const features = document.getElementById('affiliate') ? _this.features : _this.futureFeatures;
         // sort out our features into what will be our map layers
         const affiliateTrue = {
           type: 'FeatureCollection',
-          features: _.filter(_this.futureFeatures, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
         };
         const affiliateFalse = {
           type: 'FeatureCollection',
-          features: _.filter(_this.futureFeatures, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
         };
         const sourceActionNetwork = {
           type: 'FeatureCollection',
-          features: _.filter(_this.futureFeatures, function(feature) { return feature.properties.source === 'actionnetwork'; }),
+          features: _.filter(features, function(feature) { return feature.properties.source === 'actionnetwork'; }),
         };
 
         if (document.getElementById('affiliate')) {
@@ -416,7 +417,6 @@ const app = new Vue({
       // show the ones we want to show
       for (var i = layersToShow.length - 1; i >= 0; i--) {
         this.map.setLayoutProperty(layersToShow[i], 'visibility', 'visible');
-        
       }
     }
   },
