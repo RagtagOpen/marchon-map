@@ -168,7 +168,7 @@ const app = new Vue({
           _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
           _this.mapLayers.push({
             layerId: 'marchon-source-actionnetwork',
-            label: 'Action Network',
+            label: 'House Parties',
             icon: 'house.svg',
             initiallyChecked: true,
           });
@@ -192,7 +192,7 @@ const app = new Vue({
     // this is where we filter out the old stuff that doesn't show up anywhere on the
     // map.
     futureFeatures: function futureFeatures() {
-      const now = moment().subtract(3, 'days'); // recently passed dates are still 'current'
+      const now = moment().subtract(0, 'days'); // recently passed dates are still 'current' (adjust this number to keep more/less past events)
       const ff = this.features.map(function(feature) {
         const props = feature.properties;
 
