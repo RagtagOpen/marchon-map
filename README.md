@@ -17,26 +17,31 @@ Mapbox GL JS doesn't allow access to the entire feature set, only features in th
 
 The image resizing code uses [Pillow](https://github.com/python-pillow/Pillow), which contains platform-specific C code. When deploying, make sure you include the Linux version in the zip file. The easiest way to do this is to create the deployment package on Linux; [get a Docker container](https://medium.freecodecamp.org/escaping-lambda-function-hell-using-docker-40b187ec1e48) if you don't have access to a Linux box. Alternatively, you can `pip install Pillow -t linux-pillow` on Linux, then copy the resulting packages into the zip. You can do this just once, then freshen `marchon.py` as needed.
 
-create directory for Linux deployment package
+create directories for Linux deployment packages
 
     mkdir lambda-linux
     mkdir lambda-linux/lambda
     cp lambda/marchon.py lambda/requirements.txt lambda-linux/lambda
+    mkdir lambda-linux/monitoring
+    cp monitoring/*.py lambda-linux/monitoring
 
 run Ubuntu docker container with python 3.6
 
     docker run -v /path-to/marchon-map/lambda-linux:/lambda-linux -it --rm tomersha/docker-ubuntu-14.04-python-3.6.2
 
-activate python 3.6, install zip, install packages, and create zip
+activate python 3.6, install zip, install packages, and create zip archives
 
     pyenv shell 3.6.2
     apt-get install zip
     cd lambda-linux/lambda
     pip install -r requirements.txt -t .
     zip ../linux-lambda.zip -r .
+    cd ../monitoring
+    pip install -r requirements.txt -t .
+    zip ../monitoring.zip -r .
     exit
 
-upload `linux-lambda.zip` to AWS
+upload `linux-lambda.zip` and `monitoring.zip` to AWS
 
 ## GeoJSON to map
 

@@ -14,9 +14,8 @@ from PIL import Image
 
 from action_network import get_events_from_events_campaign, make_key
 
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(message)s')
+logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
-
 
 def read_sheet(sheet_range, fields, location_idx, affiliate):
     log.info('\nload sheet %s with %s', os.environ['SHEET_ID'],
@@ -57,7 +56,7 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
             log.debug('row %s\t%s\t%s',
                       len(rows) + 1, props['name'], props['location'])
         else:
-            log.warning('WARNING\tskipping %s: no location', (props['name']))
+            log.warning('Skipping %s: no location', (props['name']))
         idx += 1
     log.info('read %s rows from sheet', len(rows))
     return rows
@@ -150,13 +149,13 @@ def get_geodata(sheet, keys, countries=None):
             feature = response['features'][0]
             log.info('geocode %s\n\t%s', key, feature)
             if feature['relevance'] < 0.75:
-                log.warning('WARNING\terror geocoding %s', key)
+                log.warning('Error geocoding %s', key)
                 continue
             sheet[key]['geometry'] = response['features'][0]['geometry']
         else:
             if key in sheet:
                 del sheet[key]
-            log.warning('WARNING\terror geocoding %s', key)
+            log.warning('Error geocoding %s', key)
 
 
 def merge_data(sheet, dataset):
@@ -219,12 +218,12 @@ def resize_photo(service, file):
     resized.save(img_bytes, format=file_ext.upper())
     img_bytes.seek(0)
     s3 = boto3.resource('s3')
-    log.info(
-        s3.Object('ragtag-marchon', filename).put(
+    response = s3.Object('ragtag-marchon', filename).put(
             Body=img_bytes.read(),
             ContentType=file['mimeType'],
             ACL='public-read',
-            Expires=(datetime.now() + timedelta(hours=24 * 7))))
+            Expires=(datetime.now() + timedelta(hours=24 * 7)))
+    log.info(response)
     return filename
 
 
@@ -264,7 +263,7 @@ def update_photos(dataset):
             log.info('%s saved to %s', photo['name'], url)
             dataset[key]['properties']['photoUrl'] = url
         except:
-            log.error('ERROR resizing photo')
+            log.error('Error resizing photo')
             traceback.print_exc()
 
 
