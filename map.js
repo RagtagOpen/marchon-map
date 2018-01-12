@@ -163,7 +163,7 @@ const app = new Vue({
             initiallyChecked: true,
           });
         }
-        if (sourceActionNetwork.features.length && !_this.inIframe()) {
+        if (sourceActionNetwork.features.length) {
           _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
           _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
           _this.mapLayers.push({
