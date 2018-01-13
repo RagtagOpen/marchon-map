@@ -143,6 +143,16 @@ const app = new Vue({
 
         // add the map layers to the map, and also to the vue mapLayers
         // data. Not currently using initiallyChecked.
+        if (sourceActionNetwork.features.length) {
+          _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
+          _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
+          _this.mapLayers.push({
+            layerId: 'marchon-source-actionnetwork',
+            label: 'House Parties',
+            icon: 'house.svg',
+            initiallyChecked: true,
+          });
+        }
         if (affiliateFalse.features.length) {
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
           _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', 'star-15-red');
@@ -160,16 +170,6 @@ const app = new Vue({
             layerId: 'marchon-affiliate-true',
             label: 'Affiliates',
             icon: 'smallstar.svg',
-            initiallyChecked: true,
-          });
-        }
-        if (sourceActionNetwork.features.length) {
-          _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
-          _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
-          _this.mapLayers.push({
-            layerId: 'marchon-source-actionnetwork',
-            label: 'House Parties',
-            icon: 'house.svg',
             initiallyChecked: true,
           });
         }
