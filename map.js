@@ -145,7 +145,7 @@ const app = new Vue({
         // data. Not currently using initiallyChecked.
         if (affiliateFalse.features.length) {
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
-          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', 'star-15-red');
+          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': 'star-15-red' });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-false',
             label: 'Non Affiliates',
@@ -153,23 +153,24 @@ const app = new Vue({
             initiallyChecked: true,
           });
         }
-        if (affiliateTrue.features.length) {
-          _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
-          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', 'smallstar');
-          _this.mapLayers.push({
-            layerId: 'marchon-affiliate-true',
-            label: 'Affiliates',
-            icon: 'smallstar.svg',
-            initiallyChecked: true,
-          });
-        }
-        if (sourceActionNetwork.features.length && !_this.inIframe()) {
+        if (sourceActionNetwork.features.length) {
           _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
-          _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson', 'house');
+          _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson',
+            { 'icon-image': 'house', 'icon-size': 0.7 });
           _this.mapLayers.push({
             layerId: 'marchon-source-actionnetwork',
             label: 'House Parties',
             icon: 'house.svg',
+            initiallyChecked: true,
+          });
+        }
+        if (affiliateTrue.features.length) {
+          _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
+          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': 'smallstar' });
+          _this.mapLayers.push({
+            layerId: 'marchon-affiliate-true',
+            label: 'Affiliates',
+            icon: 'smallstar.svg',
             initiallyChecked: true,
           });
         }
@@ -264,19 +265,19 @@ const app = new Vue({
       }
     },
 
-    addLayer: function(layerId, source, icon) {
+    addLayer: function(layerId, source, layout) {
       const _this = this;
+      const layoutProps = {
+          'visibility': 'visible',
+          'icon-allow-overlap': true,
+          'text-allow-overlap': true,
+      };
 
       this.map.addLayer({
         id: layerId,
         type: 'symbol',
         source: source,
-        layout: {
-          'visibility': 'visible',
-          'icon-image': icon,
-          'icon-allow-overlap': true,
-          'text-allow-overlap': true,
-        },
+        layout: Object.assign(layout, layoutProps),
       });
       this.map.on('click', layerId, function(e) {
         _this.showFeature(e.features[0]);

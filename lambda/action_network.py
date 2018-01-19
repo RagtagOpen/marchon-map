@@ -107,6 +107,7 @@ def convert_event(event: Dict) -> Dict:
         'eventDate': parser.parse(event.get(
             'start_date', '1/20/2018')).strftime('%-m/%-d/%Y'),
         'eventLink': event.get('browser_url', ''),
+        'motpLink': event.get('browser_url', ''),
         'location': make_location(event),
         'contactEmail': get_email_address_from_organizer(get_organizer(event)),
         'host': contact_name,
