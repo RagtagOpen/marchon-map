@@ -29,9 +29,13 @@ def get_env_var(name, default_value = None):
 
 # Get configuration from environment variables 
 log_level = get_env_var('LOG_LEVEL', 'INFO')
-service_name = get_env_var('SERVICE_NAME')
-log_group_name = get_env_var('SERVICE_LOG_GROUP')
-topic_url = get_env_var('TARGET_TOPIC_URL')
+service_name = get_env_var('APPLICATION_NAME')
+log_group_name = get_env_var('APPLICATION_LOG_GROUP_NAME')
+if log_group_name.startswith('/aws/lambda/'):
+    function_name = log_group_name[10:]
+else:
+    raise RuntimeError('Log group %s is not a lambda' % log_group_name)
+topic_arn = get_env_var('REPORTING_TOPIC_ARN')
 
 # Configure local logging
 logging.basicConfig(level=log_level)
@@ -116,6 +120,10 @@ def publish_run_info(info):
              'DataType': 'String',
              'StringValue': info['name']
          },
+         'function': {
+             'DataType': 'String',
+             'StringValue': info['function']
+         },
          'status': {
              'DataType': 'String',
              'StringValue': status
@@ -140,11 +148,11 @@ def publish_run_info(info):
         # publish to topic
         sns = boto3.client('sns')
         response = sns.publish(
-                     TopicArn=topic_url,
+                     TopicArn=topic_arn,
                      Subject=subject,
                      Message=message,
                      MessageAttributes=attributes)
-    log.info('Published message %s to target topic %', response['MessageId'], topic_url)
+    log.info('Published message %s to target topic %', response['MessageId'], topic_arn)
     return response
 
 def process_lambda_run(requestId):
@@ -156,6 +164,7 @@ def process_lambda_run(requestId):
     info = analyze_run_events(events)
     publish_run_info(dict(info, 
                           requestId=requestId,
+                          function=function_name,
                           name=service_name, 
                           events=events))
 
