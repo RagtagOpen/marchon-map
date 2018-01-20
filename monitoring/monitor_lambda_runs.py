@@ -28,7 +28,6 @@ def get_env_var(name, default_value = None):
         raise RuntimeError('Required environment variable %s not found' % name)
 
 # Get configuration from environment variables 
-log_level = get_env_var('LOG_LEVEL', 'INFO')
 service_name = get_env_var('APPLICATION_NAME')
 log_group_name = get_env_var('APPLICATION_LOG_GROUP_NAME')
 if log_group_name.startswith('/aws/lambda/'):
@@ -38,8 +37,9 @@ else:
 topic_arn = get_env_var('REPORTING_TOPIC_ARN')
 
 # Configure local logging
-logging.basicConfig(level=log_level)
+log_level = get_env_var('LOG_LEVEL', 'INFO')
 log = logging.getLogger()
+log.setLevel(log_level)
 
 def decompress_string(input):
     """
@@ -90,7 +90,7 @@ def analyze_run_events(events):
             elif message.startswith('[WARNING]'):
                 warnings = warnings + 1
     duration = endts - startts
-    return { 'duration': duration, 'errors': errors, 'warnings': warnings }
+    return { 'start': startts, 'end': endts, 'duration': duration, 'errors': errors, 'warnings': warnings }
 
 def create_topic_message(info):
     """
@@ -138,11 +138,12 @@ def publish_run_info(info):
          },
     }
     global dry_run
+    print_level = logging.INFO if dry_run else logging.DEBUG
+    log.log(print_level, "%s", subject)        
+    log.log(print_level, "%s", json.dumps(attributes))
+    log.log(print_level, "%s", message)
     if dry_run:
-        # dump message to stdout
-        print(subject)
-        print(message)
-        print(json.dumps(attributes))
+        # return dummy publish response
         response = { 'MessageId': '12345' }
     else: 
         # publish to topic
@@ -161,6 +162,7 @@ def process_lambda_run(requestId):
     """
     log.debug('Processing log events for lambda request %s', requestId)
     events = get_run_events(requestId)
+    log.debug('Found %d events', len(events))
     info = analyze_run_events(events)
     publish_run_info(dict(info, 
                           requestId=requestId,
@@ -178,7 +180,9 @@ def get_request_ids(events):
          fields = event['extractedFields']
          if 'type' in fields and fields['type'] == 'END' and 'requestId' in fields:
              ids.append(fields['requestId'])
-    # shouldn't be any dupes, but we check anyway
+    # should always be at least one END event
+    assert len(ids) > 0, "No END events found in message stream."
+    # shouldn't be any dupes
     assert len(ids) == len(set(ids)), "Found duplicate request ids"
     return ids
    
@@ -193,7 +197,9 @@ def process_lambda_events(events):
     that only looks at 'END' events, to avoid including other request events that will only be 
     discarded here.
     """
-    for id in get_request_ids(events):
+    ids = get_request_ids(events)
+    log.debug("Processing events for %d runs", len(ids))
+    for id in ids:
         process_lambda_run(id)
 
 #

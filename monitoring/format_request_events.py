@@ -29,22 +29,28 @@ def format_log_event(event):
     elif message.startswith('REPORT'):
         return '' # ignore report events
     else:
-        match = re.match('\[([A-Z]+)\]\t[^\t]+\t[^\t]+\t([^\n]+)\n', message)
+        match = re.match(r"(?s)\[([A-Z]+)\]\s+\S+\s+\S+\s+(.+)", message)
         if match:
-            return '%s %-7s %s\n' % (ts,match.group(1),match.group(2))
+            result = '%s %-7s %s' % (ts,match.group(1),match.group(2))
         else:
-            return '%s %s\n' % (ts, message)
+            result =  '%s %s' % (ts, message)
+        if not result.endswith('\n'):
+            result = result + '\n'
+        return result
     
 def create_message_body(info):
     """
     Create the message body, including summary information and formatted event log.
     """
-    return 'Execution results for %s (%s)\n\n' % (info['name'], info['requestId']) + \
-      'Execution time: %s seconds\n' % datetime.timedelta(milliseconds=info['duration']).total_seconds() + \
-      '%d errors\n' % info['errors'] + \
-      '%d warnings\n' % info['warnings'] + \
-      '\nExecution Log\n\n' + \
-      ''.join(map(format_log_event, info['events']))
+    return 'Execution results for %s\n\n' % info['name'] + \
+           '%d errors\n' % info['errors'] + \
+           '%d warnings\n' % info['warnings'] + \
+           '\nExecution Log\n\n' + \
+           ''.join(map(format_log_event, info['events'])) + \
+           '\nLambda Function: %s\n' % info['function'] + \
+           'Request ID: %s\n' % info['requestId'] + \
+           'Started: %s\n' % datetime.datetime.fromtimestamp(info['start'] / 1000) + \
+           'Duration: %f seconds' % datetime.timedelta(milliseconds=info['duration']).total_seconds()
       
 if __name__ == "main":
     raise NotImplementedError('This module cannot be executed.')
