@@ -193,7 +193,7 @@ const app = new Vue({
     // this is where we filter out the old stuff that doesn't show up anywhere on the
     // map.
     futureFeatures: function futureFeatures() {
-      const now = moment().subtract(1, 'days'); // recently passed dates are still 'current' (adjust this number to keep more/less past events)
+      const now = moment().subtract(2, 'days'); // recently passed dates are still 'current' (adjust this number to keep more/less past events)
       const ff = this.features.map(function(feature) {
         const props = feature.properties;
 
