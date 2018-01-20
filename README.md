@@ -1,7 +1,9 @@
 # March On map
 
-Draw March On affilates on a [Mapbox map](https://www.mapbox.com),
+Draw March On affilates and allied events on a [Mapbox map](https://www.mapbox.com),
 for embedding on [March On](https://www.wearemarchon.org).
+
+<img src="assets/events.png" width="600">
 
 ## Google Sheets to GeoJSON
 
