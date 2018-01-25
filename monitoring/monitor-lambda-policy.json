@@ -6,7 +6,7 @@
       "Effect": "Allow",
       "Action": ["sns:Publish"],
       "Resource": [ 
-         "arn:aws:sns::187976421381:app-monitoring-reports"
+         "arn:aws:sns::534691387561:MarchonErrors"
        ]
     },    
     {
@@ -17,7 +17,7 @@
                  "logs:FilterLogEvents"
                  ],
       "Resource": [ 
-        "arn:aws:logs::187976421381:log-group:/aws/lambda/monitor-lambda-logs:*"
+        "arn:aws:logs::534691387561:log-group:/aws/lambda/marchon-events-geojson:*"
       ]
     }
   ]
