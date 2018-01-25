@@ -14,7 +14,7 @@ def make_location(event: Dict) -> str:
     if location.get('country', 'US') != 'US':
         return '{city}, {country}'.format(
             city=location.get('locality'), country=location.get('country'))
-    return location.get('postal_code', '')
+    return location.get('postal_code', '').strip()
 
 
 def get_organizer(event: Dict) -> Dict:
@@ -104,6 +104,7 @@ def convert_event(event: Dict) -> Dict:
         'source': 'actionnetwork',
         'affiliate': False,
         'name': event.get('name') or event.get('title') or '',
+        'event': event.get('name') or event.get('title') or '',
         'eventDate': parser.parse(event.get(
             'start_date', '1/20/2018')).strftime('%-m/%-d/%Y'),
         'eventLink': event.get('browser_url', ''),

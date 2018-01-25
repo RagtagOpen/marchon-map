@@ -138,20 +138,24 @@ def get_geodata(sheet, keys, countries=None):
     geocoder = Geocoder()
     for key in keys:
         # San Jose, CA doesn't return results
-        response = geocoder.forward(
-            # special handling for key for actionnetwork events allows
-            # for more than one event per locaion
-            # make_key builds a compound key of <location>::<host>
-            get_location_from_key(key).replace(', CA', ', California'),
-            limit=1,
-            country=countries).geojson()
+        # special handling for key for actionnetwork events allows
+        # for more than one event per locaion
+        # make_key builds a compound key of <location>::<host>
+        location = get_location_from_key(key).replace(', CA', ', California')
+        response = geocoder.forward(location, limit=1, country=countries).geojson()
         if 'features' in response and response['features']:
             feature = response['features'][0]
             log.info('geocode %s\n\t%s', key, feature)
             if feature['relevance'] < 0.75:
                 log.warning('Error geocoding %s', key)
                 continue
-            sheet[key]['geometry'] = response['features'][0]['geometry']
+            sheet[key]['geometry'] = feature['geometry']
+            # 'place_name': '92646, Huntington Beach, California, United States'
+            place_name = feature.get('place_name')
+            if place_name:
+                place_name = place_name.replace('%s, ' % location, '').\
+                    replace(', United States', '')
+                sheet[key]['properties']['placeName'] = place_name
         else:
             if key in sheet:
                 del sheet[key]
@@ -219,10 +223,10 @@ def resize_photo(service, file):
     img_bytes.seek(0)
     s3 = boto3.resource('s3')
     response = s3.Object('ragtag-marchon', filename).put(
-            Body=img_bytes.read(),
-            ContentType=file['mimeType'],
-            ACL='public-read',
-            Expires=(datetime.now() + timedelta(hours=24 * 7)))
+        Body=img_bytes.read(),
+        ContentType=file['mimeType'],
+        ACL='public-read',
+        Expires=(datetime.now() + timedelta(hours=24 * 7)))
     log.info(response)
     return filename
 
@@ -271,13 +275,14 @@ def lambda_handler(event=None, context=None, dry_run=False):
     sheet = get_sheet_data()
     log.info('sheet=%s\n', sheet)
     dataset = get_geojson('affiliates.json')
+    sheet.update(get_events_from_events_campaign())
     log.info('dataset=%s\n', dataset)
     keys = sheet.keys() - dataset.keys()
     if keys:
-        get_geodata(sheet, keys)
+        get_geodata(sheet, keys, os.environ.get('COUNTRIES', 'us,ca').split(','))
     merge_data(sheet, dataset)
     update_photos(dataset)
-    upload(dataset, 'affiliates.json', dry_run)
+    upload(dataset, 'affiliates_test.json', dry_run)
 
 
 def events_lambda_handler(event=None, context=None, dry_run=False):

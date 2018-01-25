@@ -26,7 +26,7 @@
             </div>
             <div class="card-detail">
               <h3>{{activeGroup.name}}</h3>
-              <h4>{{activeGroup.location}}</h4>
+              <h4>{{activeGroup.placeName}}</h4>
               <div class="social-links">
                 <span v-if="activeGroup.facebook" class="social-link">
                   <a :href="activeGroup.facebook" target="_blank">
@@ -65,6 +65,7 @@
                 </div>
                 <div class="event-title">
                   <a :href="activeGroup.eventLink" target="_blank">{{activeGroup.event}}</a>
+                  <div>{{activeGroup.placeName}}</div>
                 </div>
               </div>
               <div class="contact">
@@ -91,7 +92,7 @@
                     </time>
                   </div>
                   <div class="event-title">
-                    <a :href="ev.link" target="_blank">{{ev.name}}</a> - {{ev.location}}
+                    <a :href="ev.link" target="_blank">{{ev.name}}</a> - {{ev.placeName}}
                   </div>
                 </li>
               </ul>
@@ -107,6 +108,7 @@
     <link rel="stylesheet" id="vc_google_fonts_roboto100100italic300300italicregularitalic500500italic700700italic900900italic-css" href="//fonts.googleapis.com/css?family=Roboto%3A100%2C100italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic" type="text/css" media="all">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
     <link href="map.css" rel="stylesheet" />
-    <script src="map.js" id="mapjs" data-filename="affiliates.json" data-token="pk.eyJ1IjoibWFyY2gtb24iLCJhIjoiY2o5N3JkMGE2MDM2aTJxcGFwYXQ4MnNkNiJ9.S51iIlKgalNz3Usq_1_yCQ"></script>
+    <script src="map.js" id="mapjs" data-filename="affiliates_test.json" data-token="pk.eyJ1IjoibWFyY2gtb24iLCJhIjoiY2o5N3JkMGE2MDM2aTJxcGFwYXQ4MnNkNiJ9.S51iIlKgalNz3Usq_1_yCQ"
+      data-countries="us,ca,mx,gb,de,nz,zm,au,it,es,se,cr,no,fr,gr,ar,ug,be,at,bm,ng,vc,lu,ke,ec,vi,ch,gh"></script>
   </body>
 </html>
