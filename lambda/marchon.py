@@ -20,13 +20,7 @@ log = logging.getLogger(__name__)
 def read_sheet(sheet_range, fields, location_idx, affiliate):
     log.info('\nload sheet %s with %s', os.environ['SHEET_ID'],
              os.environ['GOOGLE_API_KEY'])
-    try:
-        service = build(
-            'sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'])
-    except:
-        # throws errors about file_cache is unavailable when using oauth2client
-        # but seems to work fine
-        pass
+    service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'], cache_discovery=False)
     result = service.spreadsheets().values().get(
         spreadsheetId=os.environ['SHEET_ID'], range=sheet_range).execute()
     values = result.get('values', [])
@@ -56,7 +50,7 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
             log.debug('row %s\t%s\t%s',
                       len(rows) + 1, props['name'], props['location'])
         else:
-            log.warning('Skipping %s: no location', (props['name']))
+            log.warning('Skipping "%s" at row %s: no location', props['name'], idx)
         idx += 1
     log.info('read %s rows from sheet', len(rows))
     return rows
@@ -196,12 +190,12 @@ def upload(dataset, filename, dry_run):
         print(data)
     else:
         s3 = boto3.resource('s3')
-        log.info(
-            s3.Object('ragtag-marchon', filename).put(
+        response = s3.Object('ragtag-marchon', filename).put(
                 Body=json.dumps(data, indent=2),
                 ContentType='application/json',
                 ACL='public-read',
-                Expires=(datetime.now() + timedelta(hours=6))))
+                Expires=(datetime.now() + timedelta(hours=6)))
+        log.info(response)
 
 
 def resize_photo(service, file):
@@ -263,7 +257,7 @@ def update_photos(dataset):
             log.info('%s saved to %s', photo['name'], url)
             dataset[key]['properties']['photoUrl'] = url
         except:
-            log.error('Error resizing photo')
+            log.error('Error resizing photo %s', key)
             traceback.print_exc()
 
 
