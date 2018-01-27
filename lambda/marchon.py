@@ -282,7 +282,7 @@ def lambda_handler(event=None, context=None, dry_run=False):
         get_geodata(sheet, keys, os.environ.get('COUNTRIES', 'us,ca').split(','))
     merge_data(sheet, dataset)
     update_photos(dataset)
-    upload(dataset, 'affiliates_test.json', dry_run)
+    upload(dataset, 'affiliates.json', dry_run)
 
 
 def events_lambda_handler(event=None, context=None, dry_run=False):
