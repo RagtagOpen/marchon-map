@@ -46,6 +46,11 @@ a {
     padding: 10px;
     display: none;
   }
+
+  #affiliateContent .name {
+    display: none;
+  }
+
   .affiliates .mapboxgl-popup-content .card-detail,
   .affiliates .mapboxgl-popup-content .event-list,
   .affiliates .mapboxgl-popup-close-button {
