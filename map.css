@@ -26,39 +26,18 @@ a {
 }
 
 @media screen and (min-width: 768px) {
-  .affiliates #map {
-    width: 65%;
-    left: 1%;
-  }
-
-  .events #map {
+  #map {
     width: 98%;
     left: 1%;
   }
 
-  #affiliate {
-    overflow-y: auto;
-    overflow-x: hidden;
-    left: 67%;
-    margin-right: 1%;
-    height: 100%;
-    background-color: #F5E9C9;
-    padding: 10px;
-    display: none;
-  }
-
-  #affiliateContent .name {
-    display: none;
-  }
-
-  .affiliates .mapboxgl-popup-content .card-detail,
-  .affiliates .mapboxgl-popup-content .event-list,
-  .affiliates .mapboxgl-popup-close-button {
-    display: none;
-  }
   .mapboxgl-popup-content .name {
     font-weight: bold;
   }
+}
+
+.mapboxgl-popup {
+  max-width: 300px;
 }
 
 @media screen and (max-width: 767px) {
@@ -67,9 +46,6 @@ a {
     left: 1%;
   }
 
-  #affiliate, .card-content {
-    display: none;
-  }
 }
 
 .social-link {
@@ -104,7 +80,7 @@ h3 {
   font-size: 20px;
 }
 
-.events h3 {
+h3 {
   font-size: 16px;
 }
 
@@ -112,7 +88,7 @@ h3 {
   h3 {
     font-size: 18px;
   }
-  .events h3 {
+  h3 {
     font-size: 18px;
   }
   h4 {
@@ -250,14 +226,14 @@ time.icon .event-date {
   font-size: 0.9em;
 }
 
-.events #popupContent {
+#popupContent {
   display: none;
 }
 
-.events .event {
+.event {
   padding-right: 15px;
 }
 
-.events .card-detail {
+.card-detail {
   padding-top: 5px;
 }

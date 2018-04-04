@@ -15,87 +15,52 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
   </head>
-  <body class="ragtag-marchon-map affiliates">
+  <body class="ragtag-marchon-map affiliates" id="affiliate">
     <div id="mapApp">
       <div id="map" class="content"></div>
-      <div id="affiliate" class="content">
+
+      <div id="popupContent">
         <div id="affiliateContent" class="card-content">
           <div v-if="activeGroup">
-            <div class="hidden-xs name">
-              {{activeGroup.name}}
-            </div>
             <div class="card-detail">
               <h3>{{activeGroup.name}}</h3>
-              <h4>{{activeGroup.placeName}}</h4>
-              <div class="social-links">
-                <span v-if="activeGroup.facebook" class="social-link">
-                  <a :href="activeGroup.facebook" target="_blank">
-                    <i class="fa fa-facebook" aria-hidden="true"></i>
-                  </a>
-                </span>
-                <span v-if="activeGroup.twitter" class="social-link">
-                  <a :href="activeGroup.twitter" target="_blank">
-                    <i class="fa fa-twitter" aria-hidden="true"></i>
-                  </a>
-                </span>
-                <span v-if="activeGroup.instagram" class="social-link">
-                  <a :href="activeGroup.instagram" target="_blank">
-                    <i class="fa fa-instagram" aria-hidden="true"></i>
-                  </a>
-                </span>
-              </div>
-              <div v-if="activeGroup.photoUrl" class="photo">
-                <img :src="activeGroup.photoUrl" class="img-thumbnail">
-              </div>
-              <div v-if="activeGroup.about" class="about">
-                {{activeGroup.about}}
-              </div>
-              <div v-if="activeGroup.event" class="event">
-                <div class="event-date hidden-xs">
-                  <time :datetime="activeGroup.eventMeta.ymd" class="icon">
-                    <span class="event-weekday">{{activeGroup.eventMeta.weekday}}</span>
-                    <span class="event-month">{{activeGroup.eventMeta.month}}</span>
-                    <span class="event-date">{{activeGroup.eventMeta.day}}</span>
-                  </time>
-                </div>
-                <div class="event-date-xs hidden-sm hidden-md hidden-lg">
+              <div v-if="activeGroup.eventMeta" class="event pull-left">
+                <div class="event-date-xs">
                   <div class="event-month">{{activeGroup.eventMeta.month}}</div>
                   <div class="event-date">{{activeGroup.eventMeta.day}}</div>
                   <div class="event-weekday">{{activeGroup.eventMeta.weekday}}</div>
                 </div>
-                <div class="event-title">
-                  <a :href="activeGroup.eventLink" target="_blank">{{activeGroup.event}}</a>
-                  <div>{{activeGroup.placeName}}</div>
+              </div>
+              <div class="info pull-left">
+                <div v-if="activeGroup.motpLink" class="event-link">
+                  <a :href="activeGroup.motpLink" target="_blank">Find out more</a>
+                </div>
+                <div v-if="activeGroup.host" class="hosted-by">
+                  Hosted by: {{activeGroup.host}}
+                </div>
+                <div class="social-links">
+                  <span v-if="activeGroup.facebook" class="social-link">
+                    <a :href="activeGroup.facebook" target="_blank">
+                      <i class="fa fa-facebook" aria-hidden="true"></i>
+                    </a>
+                  </span>
+                  <span v-if="activeGroup.twitter" class="social-link">
+                    <a :href="activeGroup.twitter" target="_blank">
+                      <i class="fa fa-twitter" aria-hidden="true"></i>
+                    </a>
+                  </span>
+                  <span v-if="activeGroup.instagram" class="social-link">
+                    <a :href="activeGroup.instagram" target="_blank">
+                      <i class="fa fa-instagram" aria-hidden="true"></i>
+                    </a>
+                  </span>
+                  <span v-if="activeGroup.mailto" class="social-link">
+                    <a :href="activeGroup.mailto" target="_blank">
+                      <i class="fa fa-envelope" aria-hidden="true"></i>
+                    </a>
+                  </span>
                 </div>
               </div>
-              <div class="contact">
-                Contact: <a :href="activeGroup.mailto" target="_blank">{{activeGroup.contactName}}</a>
-              </div>
-              <div v-if="activeGroup.website">
-                Website: <a class="website" :href="activeGroup.website" target="_blank">{{activeGroup.website}}</a>
-              </div>
-            </div>
-          </div>
-          <div v-else>
-            <div class="event-list">
-              <div class="hidden-xs">
-                Click on any star to see information about that affiliate, or enter your location in the search box to find your nearest affiliate.
-              </div>
-              <h4>Upcoming events</h4>
-              <ul class="list-group">
-                <li v-for="ev in sortedUpcomingEvents" class="list-group-item event">
-                  <div class="event-date">
-                    <time :datetime="ev.ymd" class="icon">
-                      <span class="event-weekday">{{ev.weekday}}</span>
-                      <span class="event-month">{{ev.month}}</span>
-                      <span class="event-date">{{ev.day}}</span>
-                    </time>
-                  </div>
-                  <div class="event-title">
-                    <a :href="ev.link" target="_blank">{{ev.name}}</a> - {{ev.placeName}}
-                  </div>
-                </li>
-              </ul>
             </div>
           </div>
         </div>
