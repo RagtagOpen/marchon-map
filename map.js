@@ -28,7 +28,6 @@ Vue.component('ragtag-layerfilter', {
       checkedLayers: [
         'marchon-affiliate-true',
         'marchon-affiliate-false',
-        'marchon-source-actionnetwork',
       ],
     }
   },
@@ -124,10 +123,6 @@ const app = new Vue({
           type: 'FeatureCollection',
           features: _.filter(features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
         };
-        const sourceActionNetwork = {
-          type: 'FeatureCollection',
-          features: _.filter(features, function(feature) { return feature.properties.source === 'actionnetwork'; }),
-        };
 
         if (document.getElementById('affiliate')) {
           document.getElementById('affiliate').style.display = 'block';
@@ -150,17 +145,6 @@ const app = new Vue({
             layerId: 'marchon-affiliate-false',
             label: 'Non Affiliates',
             icon: 'star-15-red.svg',
-            initiallyChecked: true,
-          });
-        }
-        if (sourceActionNetwork.features.length) {
-          _this.map.addSource('marchon-source-actionnetwork-geojson', { type: 'geojson', data: sourceActionNetwork });
-          _this.addLayer('marchon-source-actionnetwork', 'marchon-source-actionnetwork-geojson',
-            { 'icon-image': 'house', 'icon-size': 0.7 });
-          _this.mapLayers.push({
-            layerId: 'marchon-source-actionnetwork',
-            label: 'House Parties',
-            icon: 'house.svg',
             initiallyChecked: true,
           });
         }
