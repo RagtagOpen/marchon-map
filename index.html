@@ -24,13 +24,6 @@
           <div v-if="activeGroup">
             <div class="card-detail">
               <h3>{{activeGroup.name}}</h3>
-              <div v-if="activeGroup.eventMeta" class="event pull-left">
-                <div class="event-date-xs">
-                  <div class="event-month">{{activeGroup.eventMeta.month}}</div>
-                  <div class="event-date">{{activeGroup.eventMeta.day}}</div>
-                  <div class="event-weekday">{{activeGroup.eventMeta.weekday}}</div>
-                </div>
-              </div>
               <div class="info pull-left">
                 <div v-if="activeGroup.motpLink" class="event-link">
                   <a :href="activeGroup.motpLink" target="_blank">Find out more</a>
