@@ -2,7 +2,9 @@
 
 ## Setup
 
-[Create a Google project and get API key](https://console.developers.google.com/project/_/apiui/apis/library)
+1. [Create a Google project](https://console.developers.google.com/project/_/apiui/apis/library)
+1. Enable the [Google Sheets API](https://console.developers.google.com/apis/library/sheets.googleapis.com/) on your project
+1. Use the [Credentials](https://console.developers.google.com/apis/credentials) section of the console to create an API Key
 
 Install requirements
 
