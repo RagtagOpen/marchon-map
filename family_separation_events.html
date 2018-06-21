@@ -30,6 +30,9 @@
                   <div class="event-weekday">{{activeGroup.eventMeta.weekday}}</div>
                 </div>
               </div>
+              <div v-if="activeGroup.eventLink" class="fs-event-link">
+                  <a :href="activeGroup.eventLink">Event link</a>
+              </div>
             </div>
           </div>
         </div>
