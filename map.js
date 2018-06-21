@@ -123,6 +123,10 @@ const app = new Vue({
           type: 'FeatureCollection',
           features: _.filter(features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
         };
+        const familySepEvents = {
+          type: 'FeatureCollection',
+          features: _.filter(features, function(feature) { return !feature.properties.source && !feature.properties.affiliate; }),
+        };
 
         if (document.getElementById('affiliate')) {
           document.getElementById('affiliate').style.display = 'block';
@@ -154,6 +158,16 @@ const app = new Vue({
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-true',
             label: 'Affiliates',
+            icon: 'smallstar.svg',
+            initiallyChecked: true,
+          });
+        }
+        if (familySepEvents.features.length) {
+          _this.map.addSource('marchon-family-sep-events-geojson', { type: 'geojson', data: familySepEvents });
+          _this.addLayer('marchon-family-sep-events', 'marchon-family-sep-events-geojson', { 'icon-image': 'smallstar' });
+          _this.mapLayers.push({
+            layerId: 'marchon-family-sep-events',
+            label: 'Family Separation Events',
             icon: 'smallstar.svg',
             initiallyChecked: true,
           });
