@@ -91,7 +91,8 @@ def get_event_data():
     # add default name
     for loc in sheet:
         if not sheet[loc]['properties']['name']:
-            sheet[loc]['properties']['name'] = '%s Event' % loc
+            sheet[loc]['properties']['name'] = '%s Event' % sheet[loc]['properties']['city']
+
     return sheet
 
 
