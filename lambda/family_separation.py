@@ -78,13 +78,6 @@ def get_event_data():
         'city': 3,
         'state': 4,
         'country': 5,
-        'host': 6,
-        'affiliate': 7,
-        'contactName': 8,
-        'contactEmail': 9,
-        'facebook': 10,
-        'twitter': 11,
-        'instagram': 12,
     }
     sheet = read_sheet('Sheet1!A1:M', fields, [2], False)
 
