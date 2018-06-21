@@ -7,6 +7,8 @@ const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAt
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
+const monthLookup = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
 // for the layer filter, we have a vue component, which is managing
 // a mapbox control which we define (https://www.mapbox.com/mapbox-gl-js/api/#icontrol)
 
@@ -376,6 +378,12 @@ const app = new Vue({
         props.eventMeta = _.find(this.events, function(ev) {
           return ev.location === props.location;
         });
+        expandedDate = props.eventDate.split("/");
+        props.expandedDate = {
+            'eventMonth': monthLookup[expandedDate[0]],
+            'eventDay': expandedDate[1],
+            'eventYear': expandedDate[2]
+        }
       }
       this.activeGroup = props;
     },

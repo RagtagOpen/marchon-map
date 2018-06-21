@@ -25,9 +25,8 @@
               <h3>{{activeGroup.name}}</h3>
               <div v-if="activeGroup.eventDate" class="event pull-left">
                 <div class="event-date-xs">
-                  <div class="event-month">{{activeGroup.eventMeta.month}}</div>
-                  <div class="event-date">{{activeGroup.eventMeta.day}}</div>
-                  <div class="event-weekday">{{activeGroup.eventMeta.weekday}}</div>
+                  <div class="event-month">{{activeGroup.expandedDate.eventMonth}}</div>
+                  <div class="event-date">{{activeGroup.expandedDate.eventDay}}</div>
                 </div>
               </div>
               <div v-if="activeGroup.eventLink" class="fs-event-link">
