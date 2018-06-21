@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+    <script src="https://unpkg.com/@typicode/pegasus/dist/pegasus.min.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.2/mapbox-gl.js"></script>
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.2/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.1/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.1/mapbox-gl-geocoder.css" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+  </head>
+  <body class="ragtag-marchon-events events">
+    <div id="mapApp">
+      <div id="map" class="content"></div>
+      <div id="popupContent">
+        <div id="affiliateContent" class="card-content">
+          <div v-if="activeGroup">
+            <div class="card-detail">
+              <h3>{{activeGroup.name}}</h3>
+              <div v-if="activeGroup.eventDate" class="event pull-left">
+                <div class="event-date-xs">
+                  <div class="event-month">{{activeGroup.eventMeta.month}}</div>
+                  <div class="event-date">{{activeGroup.eventMeta.day}}</div>
+                  <div class="event-weekday">{{activeGroup.eventMeta.weekday}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="layerFilterControl" class="mapboxgl-ctrl">
+        <ragtag-layerfilter
+          :layers="mapLayers"
+          @layer-change="layerDisplayChange"
+        ></ragtag-layerfilter>
+      </div>
+    </div>
+    <div id="userMarker">
+      <i class="fa fa-circle"></i>
+    </div>
+    <script type="text/x-template" id="layerfilter-template">
+      <div class="map-widget filter-widget">
+        <template v-for="layer in layers">
+          <div>
+            <input
+              type="checkbox"
+              :value="layer.layerId"
+              :id="layer.layerId"
+              v-model="checkedLayers"
+              @change="showHideLayers()"
+            >
+            <label for="layer.layerId"><img :src="'assets/'+layer.icon">{{layer.label}}</label>
+          </div>
+        </template>
+      </div>
+    </script>
+    <link rel="stylesheet" id="vc_google_fonts_roboto100100italic300300italicregularitalic500500italic700700italic900900italic-css" href="//fonts.googleapis.com/css?family=Roboto%3A100%2C100italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic" type="text/css" media="all">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
+    <link href="map.css" rel="stylesheet" />
+    <script src="map.js" id="mapjs" data-filename="family_separation_events.json" data-countries="us,ca,mx,gb,de,nz,zm,au,it,es,se,cr,no,fr,gr,ar,ug,be,at,bm,ng,vc,lu,ke,ec,vi,ch,gh" data-token="pk.eyJ1IjoibWFyY2gtb24iLCJhIjoiY2o5N3JkMGE2MDM2aTJxcGFwYXQ4MnNkNiJ9.S51iIlKgalNz3Usq_1_yCQ"></script>
+  </body>
+</html>
