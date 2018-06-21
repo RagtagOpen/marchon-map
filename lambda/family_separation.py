@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import hashlib
 import io
 import json
 import logging
@@ -15,7 +16,7 @@ from PIL import Image
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
-def read_sheet(sheet_range, fields, location_idx, affiliate):
+def read_sheet(sheet_range, fields, ident_fields, affiliate):
     log.info('\nload sheet %s with %s', os.environ['SHEET_ID'],
              os.environ['GOOGLE_API_KEY'])
     service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'], cache_discovery=False)
@@ -28,11 +29,11 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
         empty[field] = ''
     idx = 0
     for row in values[1:]:
-        if not isinstance(location_idx, list):
-            location_idx = [location_idx]
+        if not isinstance(ident_fields, list):
+            ident_fields = [ident_fields]
 
-        if max(location_idx) >= len(row):
-            log.warning('Skipping row %d because no location', idx)
+        if max(ident_fields) >= len(row):
+            log.warning('Skipping row %s - not enough columns to build identifier', idx)
             continue
 
         props = {}
@@ -49,16 +50,21 @@ def read_sheet(sheet_range, fields, location_idx, affiliate):
                     props[field] = True
                 if props[field] == 'N':
                     props[field] = False
-        location = ' '.join(map(lambda f: row[f].strip(), location_idx))
-        if location:
-            rows[location] = {
-                'id': location,
+
+        ident = hashlib.md5()
+        for i in ident_fields:
+            ident.update(row[i].encode('utf8'))
+        ident = ident.hexdigest()
+
+        if ident:
+            rows[ident] = {
+                'id': ident,
                 'properties': props
             }
             log.debug('row %s\t%s\t%s',
-                      len(rows) + 1, props['name'], rows[location]['id'])
+                      len(rows) + 1, props['name'], ident)
         else:
-            log.warning('Skipping "%s" at row %s: no location', props['name'], idx)
+            log.warning('Skipping "%s" at row %s: no identifier', props['name'], idx)
         idx += 1
     log.info('read %s rows from sheet', len(rows))
     return rows
@@ -80,7 +86,7 @@ def get_event_data():
         'twitter': 11,
         'instagram': 12,
     }
-    sheet = read_sheet('Sheet1!A1:M', fields, [3, 4, 5], False)
+    sheet = read_sheet('Sheet1!A1:M', fields, [2], False)
 
     # add default name
     for loc in sheet:
@@ -107,25 +113,27 @@ def get_geojson(url):
     return features
 
 
-def get_geodata(sheet, keys, countries=None):
+def get_geodata(sheet, keys, location_fields, countries=None):
     # in spreadsheet but not GeoJSON
-    if not countries:
-        countries = ['us', 'ca']
+    countries = countries or ['us', 'ca']
+
     geocoder = Geocoder()
     for key in keys:
-        response = geocoder.forward(key, limit=1, types=['place']).geojson()
+        row = sheet[key]
+        location = ' '.join(map(lambda f: row['properties'][f].strip(), location_fields))
+        response = geocoder.forward(location, limit=1, types=['place']).geojson()
         features = response.get('features')
 
         if not features:
             if key in sheet:
                 del sheet[key]
-            log.warning('Error geocoding %s', key)
+            log.warning('Error geocoding %s: %s', key, location)
             continue
 
         feature = features[0]
-        log.info('geocode %s\n\t%s', key, feature)
+        log.info('geocode %s\n\t%s', location, feature)
         if feature['relevance'] < 0.75:
-            log.warning('Error geocoding %s', key)
+            log.warning('Error geocoding %s: %s', key, location)
             continue
         sheet[key]['geometry'] = feature['geometry']
         # 'place_name': '92646, Huntington Beach, California, United States'
@@ -193,6 +201,7 @@ def events_lambda_handler(event=None, context=None, dry_run=False):
         get_geodata(
             sheet,
             keys,
+            ['city', 'state', 'country'],
             countries=countries)
     merge_data(sheet, dataset)
     upload(dataset, 'family_separation_events.json', dry_run)
