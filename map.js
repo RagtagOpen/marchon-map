@@ -180,7 +180,7 @@ const app = new Vue({
         const el = document.getElementsByClassName('mapboxgl-ctrl-attrib');
 
         if (el && el.length) {
-          el[0].innerHTML = 'by <a style="text-decoration: underline" target="_blank" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ' +
+          el[0].innerHTML = 'by <a style="text-decoration: underline" target="_blank" href="https://wearemarchon.org">March On</a>&nbsp;and&nbsp<a style="text-decoration: underline" target="_blank" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ' +
             el[0].innerHTML;
           console.log('attribution updated');
         }
@@ -378,11 +378,15 @@ const app = new Vue({
         props.eventMeta = _.find(this.events, function(ev) {
           return ev.location === props.location;
         });
-        expandedDate = props.eventDate.split("/");
-        props.expandedDate = {
-            'eventMonth': monthLookup[expandedDate[0]],
-            'eventDay': expandedDate[1],
-            'eventYear': expandedDate[2]
+        try {
+            expandedDate = props.eventDate.split("/");
+            props.expandedDate = {
+                'eventMonth': monthLookup[expandedDate[0]],
+                'eventDay': expandedDate[1],
+                'eventYear': expandedDate[2]
+            }
+        }
+        catch (err) {
         }
       }
       this.activeGroup = props;
