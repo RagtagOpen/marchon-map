@@ -378,11 +378,15 @@ const app = new Vue({
         props.eventMeta = _.find(this.events, function(ev) {
           return ev.location === props.location;
         });
-        expandedDate = props.eventDate.split("/");
-        props.expandedDate = {
-            'eventMonth': monthLookup[expandedDate[0]],
-            'eventDay': expandedDate[1],
-            'eventYear': expandedDate[2]
+        try {
+            expandedDate = props.eventDate.split("/");
+            props.expandedDate = {
+                'eventMonth': monthLookup[expandedDate[0]],
+                'eventDay': expandedDate[1],
+                'eventYear': expandedDate[2]
+            }
+        }
+        catch (err) {
         }
       }
       this.activeGroup = props;

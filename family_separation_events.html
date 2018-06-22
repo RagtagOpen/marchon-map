@@ -29,6 +29,12 @@
                   <div class="event-date">{{activeGroup.expandedDate.eventDay}}</div>
                 </div>
               </div>
+              <div v-if="activeGroup.state" class="fs_location">
+                  <div>{{activeGroup.city}}, {{activeGroup.state}}</div>
+              </div>
+              <div v-else class="fs_location">
+                  <div>{{activeGroup.city}}, {{activeGroup.country}}</div>
+              </div>
               <div v-if="activeGroup.eventLink" class="fs-event-link">
                   <a :href="activeGroup.eventLink">See details</a>
               </div>
