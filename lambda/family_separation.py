@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
 import hashlib
 import io
 import json
 import logging
 import os
 import traceback
+from datetime import datetime, timedelta
 from typing import Dict
 
 import boto3
@@ -16,10 +16,12 @@ from PIL import Image
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
+
 def read_sheet(sheet_range, fields, ident_fields, affiliate):
     log.info('\nload sheet %s with %s', os.environ['SHEET_ID'],
              os.environ['GOOGLE_API_KEY'])
-    service = build('sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'], cache_discovery=False)
+    service = build(
+        'sheets', 'v4', developerKey=os.environ['GOOGLE_API_KEY'], cache_discovery=False)
     result = service.spreadsheets().values().get(
         spreadsheetId=os.environ['SHEET_ID'], range=sheet_range).execute()
     values = result.get('values', [])
@@ -33,7 +35,8 @@ def read_sheet(sheet_range, fields, ident_fields, affiliate):
             ident_fields = [ident_fields]
 
         if max(ident_fields) >= len(row):
-            log.warning('Skipping row %s - not enough columns to build identifier', idx)
+            log.warning(
+                'Skipping row %s - not enough columns to build identifier', idx)
             continue
 
         props = {}
@@ -64,7 +67,8 @@ def read_sheet(sheet_range, fields, ident_fields, affiliate):
             log.debug('row %s\t%s\t%s',
                       len(rows) + 1, props['name'], ident)
         else:
-            log.warning('Skipping "%s" at row %s: no identifier', props['name'], idx)
+            log.warning('Skipping "%s" at row %s: no identifier',
+                        props['name'], idx)
         idx += 1
     log.info('read %s rows from sheet', len(rows))
     return rows
@@ -114,8 +118,10 @@ def get_geodata(sheet, keys, location_fields, countries=None):
     geocoder = Geocoder()
     for key in keys:
         row = sheet[key]
-        location = ' '.join(map(lambda f: row['properties'][f].strip(), location_fields))
-        response = geocoder.forward(location, limit=1, types=['place']).geojson()
+        location = ' '.join(
+            map(lambda f: row['properties'][f].strip(), location_fields))
+        response = geocoder.forward(
+            location, limit=1, types=['place']).geojson()
         features = response.get('features')
 
         if not features:
@@ -133,7 +139,8 @@ def get_geodata(sheet, keys, location_fields, countries=None):
         # 'place_name': '92646, Huntington Beach, California, United States'
         place_name = feature.get('place_name')
         if place_name:
-            place_name = place_name.replace('%s, ' % key, '').replace(', United States', '')
+            place_name = place_name.replace(
+                '%s, ' % key, '').replace(', United States', '')
             sheet[key]['properties']['placeName'] = place_name
 
 
@@ -176,10 +183,10 @@ def upload(dataset, filename, dry_run):
     else:
         s3 = boto3.resource('s3')
         response = s3.Object('ragtag-marchon', filename).put(
-                Body=json.dumps(data, indent=2),
-                ContentType='application/json',
-                ACL='public-read',
-                Expires=(datetime.now() + timedelta(hours=6)))
+            Body=json.dumps(data, indent=2),
+            ContentType='application/json',
+            ACL='public-read',
+            Expires=(datetime.now() + timedelta(hours=6)))
         log.info(response)
 
 
