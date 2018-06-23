@@ -82,6 +82,7 @@ def get_event_data():
         'city': 3,
         'state': 4,
         'country': 5,
+        'street_address': 13,
     }
     sheet = read_sheet('Sheet1!A1:M', fields, [2], False)
 
@@ -202,7 +203,7 @@ def events_lambda_handler(event=None, context=None, dry_run=False):
         get_geodata(
             sheet,
             keys,
-            ['city', 'state', 'country'],
+            ['street_address', 'city', 'state', 'country'],
             countries=countries)
     merge_data(sheet, dataset)
     upload(dataset, 'family_separation_events.json', dry_run)
