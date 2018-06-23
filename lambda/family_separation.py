@@ -177,6 +177,7 @@ def merge_data(sheet, dataset):
 def upload(dataset, filename, dry_run):
     data = {
         'type': 'FeatureCollection',
+        'generated': datetime.now().isoformat(),
         'features': [dataset[key] for key in dataset]
     }
     if dry_run:
