@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import time
 import traceback
 from datetime import datetime, timedelta
 from typing import Dict
@@ -13,7 +14,7 @@ from apiclient.discovery import build
 from mapbox import Geocoder
 from PIL import Image
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger(__name__)
 
 
@@ -34,7 +35,8 @@ def read_sheet(sheet_range, fields, ident_fields, affiliate):
         if not isinstance(ident_fields, list):
             ident_fields = [ident_fields]
 
-        if max(ident_fields) >= len(row):
+        # minus 1 because street_address is optional and another minus 1 because state is optional
+        if len(ident_fields) - 2 >= len(row):
             log.warning(
                 'Skipping row %s - not enough columns to build identifier', idx)
             continue
@@ -56,7 +58,10 @@ def read_sheet(sheet_range, fields, ident_fields, affiliate):
 
         ident = hashlib.md5()
         for i in ident_fields:
-            ident.update(row[i].encode('utf8'))
+            try:
+                ident.update(row[i].encode('utf8'))
+            except IndexError:
+                pass  # if there isn't a street_address, it's ok
         ident = ident.hexdigest()
 
         if ident:
@@ -84,7 +89,7 @@ def get_event_data():
         'country': 5,
         'street_address': 13,
     }
-    sheet = read_sheet('Sheet1!A1:M', fields, [2], False)
+    sheet = read_sheet('Sheet1!A1:Z', fields, [2, 3, 4, 5, 13], False)
 
     # add default name
     for loc in sheet:
@@ -121,20 +126,23 @@ def get_geodata(sheet, keys, location_fields, countries=None):
         row = sheet[key]
         location = ' '.join(
             map(lambda f: row['properties'][f].strip(), location_fields))
-        response = geocoder.forward(
-            location, limit=1, types=['place']).geojson()
+        location = row['properties'].get('street_address') or location
+        resp = geocoder.forward(
+            location, limit=1, types=['place', 'address'])
+        response = resp.geojson()
         features = response.get('features')
 
         if not features:
             if key in sheet:
                 del sheet[key]
-            log.warning('Error geocoding %s: %s', key, location)
+            log.error('Error geocoding no features %s: %s; %s',
+                      key, location, resp.request.url)
             continue
 
         feature = features[0]
         log.info('geocode %s\n\t%s', location, feature)
         if feature['relevance'] < 0.75:
-            log.warning('Error geocoding %s: %s', key, location)
+            log.error('Error geocoding relevance %s: %s', key, location)
             continue
         sheet[key]['geometry'] = feature['geometry']
         # 'place_name': '92646, Huntington Beach, California, United States'
@@ -143,6 +151,8 @@ def get_geodata(sheet, keys, location_fields, countries=None):
             place_name = place_name.replace(
                 '%s, ' % key, '').replace(', United States', '')
             sheet[key]['properties']['placeName'] = place_name
+    # rate limit is 10 per second, this stall keeps us within that
+    time.sleep(0.1)
 
 
 def merge_data(sheet, dataset):
@@ -204,7 +214,7 @@ def events_lambda_handler(event=None, context=None, dry_run=False):
         get_geodata(
             sheet,
             keys,
-            ['street_address', 'city', 'state', 'country'],
+            ['city', 'state', 'country'],
             countries=countries)
     merge_data(sheet, dataset)
     upload(dataset, 'family_separation_events.json', dry_run)
