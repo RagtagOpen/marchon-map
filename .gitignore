@@ -3,3 +3,6 @@
 testdata.json
 lambda-linux/
 
+*.pyc
+.env
+.python-version
