@@ -132,7 +132,7 @@ def get_geodata(sheet, keys, location_fields, countries=None):
         response = resp.geojson()
         features = response.get('features')
 
-        if not features:
+        if not features or location.strip().lower() == 'address':
             if key in sheet:
                 del sheet[key]
             log.error('Error geocoding no features %s: %s; %s',
@@ -190,6 +190,8 @@ def upload(dataset, filename, dry_run):
         'generated': datetime.now().isoformat(),
         'features': [dataset[key] for key in dataset]
     }
+    data['features'] = [x for x in data['features'] if not x.get(
+        'properties', {}).get('street_address') == 'Address']
     if dry_run:
         print(json.dumps(data))
     else:
