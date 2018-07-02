@@ -27,17 +27,14 @@ Vue.component('ragtag-layerfilter', {
       // have failed. - Marion Newlevant
       // Note that we get a javascript error if any of these layers
       // don't actually exist.
-      checkedLayers: [
-        'marchon-affiliate-true',
-        'marchon-affiliate-false',
-      ],
-    }
+      checkedLayers: ['marchon-affiliate-true', 'marchon-affiliate-false']
+    };
   },
   methods: {
     showHideLayers: function() {
       this.$emit('layer-change', this.checkedLayers);
     }
-  },
+  }
 });
 
 // this is the mapbox control - it grabs the existing vue component
@@ -61,7 +58,7 @@ const app = new Vue({
     mapLoaded: false,
     userMarker: null,
     features: [],
-    mapLayers: [], // data about all of the map layers
+    mapLayers: [] // data about all of the map layers
   },
 
   created: function created() {
@@ -83,7 +80,7 @@ const app = new Vue({
       container: 'map',
       style: 'mapbox://styles/march-on/cj9nq97bw3oco2snohkuh423m',
       center: [-95, 40],
-      zoom: 3,
+      zoom: 3
     });
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
     if (document.getElementById('layerFilterControl')) {
@@ -91,23 +88,26 @@ const app = new Vue({
     }
     this.popup = new mapboxgl.Popup({
       closeButton: true,
-      closeOnClick: true,
+      closeOnClick: true
     });
     this.geocoder = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
       flyTo: false,
-      country: countries,
+      country: countries
     });
     this.map.addControl(this.geocoder);
-    this.geocoder.on('result', _.throttle(function(r) {
-      if (r.result && r.result.center) {
-        _this.userLocation = {
-          latitude: r.result.center[1],
-          longitude: r.result.center[0],
-        };
-        _this.locationSrc = 'search';
-      }
-    }, 100));
+    this.geocoder.on(
+      'result',
+      _.throttle(function(r) {
+        if (r.result && r.result.center) {
+          _this.userLocation = {
+            latitude: r.result.center[1],
+            longitude: r.result.center[0]
+          };
+          _this.locationSrc = 'search';
+        }
+      }, 100)
+    );
     this.map.on('load', function() {
       _this.mapLoaded = true;
       // load GeoJSON, then pass to Mapbox (pegasus loading magic)
@@ -119,15 +119,45 @@ const app = new Vue({
         // sort out our features into what will be our map layers
         const affiliateTrue = {
           type: 'FeatureCollection',
-          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) {
+            return feature.properties.source === 'events' && feature.properties.affiliate;
+          })
         };
         const affiliateFalse = {
           type: 'FeatureCollection',
-          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) {
+            return feature.properties.source === 'events' && !feature.properties.affiliate;
+          })
         };
         const familySepEvents = {
           type: 'FeatureCollection',
-          features: _.filter(features, function(feature) { return !feature.properties.source && !feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) {
+            let isPast = false;
+            try {
+              let dt = moment(feature.properties.eventDate, 'MM/DD/YYYY');
+              if (dt.diff(moment()) <= 0) {
+                isPast = true;
+              }
+            } catch (err) {
+              isPast = true;
+            }
+            return !isPast && !feature.properties.source && !feature.properties.affiliate;
+          })
+        };
+        const pastFamilySepEvents = {
+          type: 'FeatureCollection',
+          features: _.filter(features, function(feature) {
+            let isPast = false;
+            try {
+              let dt = moment(feature.properties.eventDate, 'MM/DD/YYYY');
+              if (dt.diff(moment()) <= 0) {
+                isPast = true;
+              }
+            } catch (err) {
+              isPast = true;
+            }
+            return isPast && !feature.properties.source && !feature.properties.affiliate;
+          })
         };
 
         if (document.getElementById('affiliate')) {
@@ -137,10 +167,13 @@ const app = new Vue({
         const lat = [55, 24.52];
         const lng = [-66.95, -124.77];
 
-        _this.map.fitBounds([
-          [_.min(lng), _.min(lat)], // sw
-          [_.max(lng), _.max(lat)], // ne
-        ], { padding: 10 });
+        _this.map.fitBounds(
+          [
+            [_.min(lng), _.min(lat)], // sw
+            [_.max(lng), _.max(lat)] // ne
+          ],
+          { padding: 10 }
+        );
 
         // add the map layers to the map, and also to the vue mapLayers
         // data. Not currently using initiallyChecked.
@@ -151,7 +184,7 @@ const app = new Vue({
             layerId: 'marchon-affiliate-false',
             label: 'Non Affiliates',
             icon: 'star-15-red.svg',
-            initiallyChecked: true,
+            initiallyChecked: true
           });
         }
         if (affiliateTrue.features.length) {
@@ -161,17 +194,27 @@ const app = new Vue({
             layerId: 'marchon-affiliate-true',
             label: 'Affiliates',
             icon: 'smallstar.svg',
-            initiallyChecked: true,
+            initiallyChecked: true
+          });
+        }
+        if (pastFamilySepEvents.features.length) {
+          _this.map.addSource('marchon-family-sep-events-past-geojson', { type: 'geojson', data: pastFamilySepEvents });
+          _this.addLayer('marchon-family-sep-events-past', 'marchon-family-sep-events-past-geojson', { 'icon-image': 'star-gray' });
+          _this.mapLayers.push({
+            layerId: 'marchon-family-sep-events-past',
+            label: 'Family Separation Events (past)',
+            icon: 'star-gray.svg',
+            initiallyChecked: true
           });
         }
         if (familySepEvents.features.length) {
           _this.map.addSource('marchon-family-sep-events-geojson', { type: 'geojson', data: familySepEvents });
-          _this.addLayer('marchon-family-sep-events', 'marchon-family-sep-events-geojson', { 'icon-image': 'smallstar' });
+          _this.addLayer('marchon-family-sep-events', 'marchon-family-sep-events-geojson', { 'icon-image': 'star-blue' });
           _this.mapLayers.push({
             layerId: 'marchon-family-sep-events',
             label: 'Family Separation Events',
-            icon: 'smallstar.svg',
-            initiallyChecked: true,
+            icon: 'star-blue.svg',
+            initiallyChecked: true
           });
         }
       });
@@ -180,8 +223,7 @@ const app = new Vue({
         const el = document.getElementsByClassName('mapboxgl-ctrl-attrib');
 
         if (el && el.length) {
-          el[0].innerHTML = 'by <a style="text-decoration: underline" target="_blank" href="https://wearemarchon.org">March On</a>&nbsp;and&nbsp<a style="text-decoration: underline" target="_blank" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ' +
-            el[0].innerHTML;
+          el[0].innerHTML = 'by <a style="text-decoration: underline" target="_blank" href="https://wearemarchon.org">March On</a>&nbsp;and&nbsp<a style="text-decoration: underline" target="_blank" href="https://ragtag.org">Ragtag.org</a>&nbsp;&nbsp; ' + el[0].innerHTML;
           console.log('attribution updated');
         }
       }, 200);
@@ -226,14 +268,14 @@ const app = new Vue({
           weekday: dt.format('dddd'),
           month: dt.format('MMMM'),
           day: dt.format('D'),
-          link: props.eventLink,
+          link: props.eventLink
         };
       });
     },
 
     sortedUpcomingEvents: function sortedEvents() {
       return _.sortBy(this.events, ['ymd', 'name']);
-    },
+    }
   },
 
   watch: {
@@ -254,7 +296,7 @@ const app = new Vue({
       if (this.mapLoaded && (this.locationSrc === 'search' || !this.popupLocation)) {
         this.highlightClosest();
       }
-    },
+    }
   },
 
   methods: {
@@ -269,24 +311,28 @@ const app = new Vue({
     addLayer: function(layerId, source, layout) {
       const _this = this;
       const layoutProps = {
-          'visibility': 'visible',
-          'icon-allow-overlap': true,
-          'text-allow-overlap': true,
+        visibility: 'visible',
+        'icon-allow-overlap': true,
+        'text-allow-overlap': true
       };
 
       this.map.addLayer({
         id: layerId,
         type: 'symbol',
         source: source,
-        layout: Object.assign(layout, layoutProps),
+        layout: Object.assign(layout, layoutProps)
       });
       this.map.on('click', layerId, function(e) {
         _this.showFeature(e.features[0]);
         _this.showPopup(e.features[0]);
       });
-      this.map.on('mousemove', layerId, _.throttle(function(e) {
-        _this.showFeature(e.features[0]);
-      }, 100));
+      this.map.on(
+        'mousemove',
+        layerId,
+        _.throttle(function(e) {
+          _this.showFeature(e.features[0]);
+        }, 100)
+      );
       this.map.on('mouseenter', layerId, function(e) {
         _this.showPopup(e.features[0]);
       });
@@ -338,18 +384,18 @@ const app = new Vue({
 
         return {
           feature: feature,
-          distance: distance,
+          distance: distance
         };
       });
-      const closest = _.minBy(withDistance, function(d) { return d.distance; });
+      const closest = _.minBy(withDistance, function(d) {
+        return d.distance;
+      });
 
       if (!this.userMarker) {
         const el = document.getElementById('userMarker');
 
         el.style.display = 'block';
-        this.userMarker = new mapboxgl.Marker(el)
-          .setLngLat([loc.longitude, loc.latitude])
-          .addTo(this.map);
+        this.userMarker = new mapboxgl.Marker(el).setLngLat([loc.longitude, loc.latitude]).addTo(this.map);
       } else {
         this.userMarker.setLngLat([loc.longitude, loc.latitude]);
       }
@@ -357,15 +403,15 @@ const app = new Vue({
       this.showPopup(closest.feature);
     },
 
-    deg2rad: function(deg) { return deg * (Math.PI / 180); },
+    deg2rad: function(deg) {
+      return deg * (Math.PI / 180);
+    },
 
     distance: function distance(lat1, lon1, lat2, lon2) {
       // distance in km
       const dLat = this.deg2rad(lat2 - lat1);
       const dLon = this.deg2rad(lon2 - lon1);
-      const a = (Math.sin(dLat / 2) * Math.sin(dLat / 2)) +
-          (Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
-           Math.sin(dLon / 2) * Math.sin(dLon / 2));
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
       return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     },
@@ -379,15 +425,13 @@ const app = new Vue({
           return ev.location === props.location;
         });
         try {
-            expandedDate = props.eventDate.split("/");
-            props.expandedDate = {
-                'eventMonth': monthLookup[expandedDate[0]],
-                'eventDay': expandedDate[1],
-                'eventYear': expandedDate[2]
-            }
-        }
-        catch (err) {
-        }
+          expandedDate = props.eventDate.split('/');
+          props.expandedDate = {
+            eventMonth: monthLookup[expandedDate[0]],
+            eventDay: expandedDate[1],
+            eventYear: expandedDate[2]
+          };
+        } catch (err) {}
       }
       this.activeGroup = props;
     },
@@ -431,5 +475,5 @@ const app = new Vue({
         this.map.setLayoutProperty(layersToShow[i], 'visibility', 'visible');
       }
     }
-  },
+  }
 });
