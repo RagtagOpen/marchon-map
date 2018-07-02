@@ -199,7 +199,7 @@ const app = new Vue({
         }
         if (pastFamilySepEvents.features.length) {
           _this.map.addSource('marchon-family-sep-events-past-geojson', { type: 'geojson', data: pastFamilySepEvents });
-          _this.addLayer('marchon-family-sep-events-past', 'marchon-family-sep-events-past-geojson', { 'icon-image': 'star-gray' });
+          _this.addLayer('marchon-family-sep-events-past', 'marchon-family-sep-events-past-geojson', { 'icon-image': 'star-gray-light' });
           _this.mapLayers.push({
             layerId: 'marchon-family-sep-events-past',
             label: 'Family Separation Events (past)',
