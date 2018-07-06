@@ -4,6 +4,7 @@ const mapjs = document.getElementById('mapjs');
 // use that instead. Beware of aggressive caching by chrome.
 const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
 // const geojson = pegasus('/testdata.json');
+
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
 mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
@@ -125,9 +126,26 @@ const app = new Vue({
           type: 'FeatureCollection',
           features: _.filter(features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
         };
-        const familySepEvents = {
+        // familySepEvents: June 30 2018
+        const familySepEventsFuture = {
           type: 'FeatureCollection',
-          features: _.filter(features, function(feature) { return !feature.properties.source && !feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) {
+            if (feature.properties.source || feature.properties.affiliate) { return false; }
+            const eventDate = moment(feature.properties.eventDate, 'MM/DD/YYYY');
+            const now = moment().subtract(1, 'days');
+            const pastEvent = eventDate.isBefore(now);
+            return !pastEvent;
+          }),
+        };
+        const familySepEventsPast = {
+          type: 'FeatureCollection',
+          features: _.filter(features, function(feature) {
+            if (feature.properties.source || feature.properties.affiliate) { return false; }
+            const eventDate = moment(feature.properties.eventDate, 'MM/DD/YYYY');
+            const now = moment().subtract(1, 'days');
+            const pastEvent = eventDate.isBefore(now);
+            return !feature.properties.source && !feature.properties.affiliate;
+          }),
         };
 
         if (document.getElementById('affiliate')) {
@@ -164,13 +182,24 @@ const app = new Vue({
             initiallyChecked: true,
           });
         }
-        if (familySepEvents.features.length) {
-          _this.map.addSource('marchon-family-sep-events-geojson', { type: 'geojson', data: familySepEvents });
-          _this.addLayer('marchon-family-sep-events', 'marchon-family-sep-events-geojson', { 'icon-image': 'smallstar' });
+        // familySepEvents
+        if (familySepEventsPast.features.length) {
+          _this.map.addSource('marchon-family-sep-events-past-geojson', { type: 'geojson', data: familySepEventsPast });
+          _this.addLayer('marchon-family-sep-events-past', 'marchon-family-sep-events-past-geojson', { 'icon-image': 'star-gray-light' });
+          _this.mapLayers.push({
+            layerId: 'marchon-family-sep-events-past',
+            label: 'Family Separation Events (Past)',
+            icon: 'star-gray-light.svg',
+            initiallyChecked: true,
+          });
+        }
+        if (familySepEventsFuture.features.length) {
+          _this.map.addSource('marchon-family-sep-events-future-geojson', { type: 'geojson', data: familySepEventsFuture });
+          _this.addLayer('marchon-family-sep-events-future', 'marchon-family-sep-events-future-geojson', { 'icon-image': 'star-blue' });
           _this.mapLayers.push({
             layerId: 'marchon-family-sep-events',
             label: 'Family Separation Events',
-            icon: 'smallstar.svg',
+            icon: 'star-blue.svg',
             initiallyChecked: true,
           });
         }
@@ -192,6 +221,7 @@ const app = new Vue({
     // the features that are in the future or the recent past (the ones we display).
     // this is where we filter out the old stuff that doesn't show up anywhere on the
     // map.
+    // Looks like this code is pretty much deactivated. I'm leaving it alone for now.
     futureFeatures: function futureFeatures() {
       // const now = moment().subtract(28, 'days'); // recently passed dates are still 'current' (adjust this number to keep more/less past events)
       const ff = this.features.map(function(feature) {
