@@ -12,7 +12,6 @@ import boto3
 import requests
 from apiclient.discovery import build
 from mapbox import Geocoder
-from PIL import Image
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger(__name__)
