@@ -220,7 +220,7 @@ const app = new Vue({
           _this.addLayer('marchonpolls-flagship-events', 'marchopolls-flaghsip-events-geojson', { 'icon-image': 'star-pink' });
           _this.mapLayers.push({
             layerId: 'marchonpolls-flagship-events',
-            label: 'MarchOn Polls Flagship Events)',
+            label: 'MarchOn Polls Flagship Events',
             icon: 'star-pink.svg',
             initiallyChecked: true,
           });
