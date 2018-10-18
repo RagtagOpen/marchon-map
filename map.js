@@ -2,7 +2,9 @@ const mapjs = document.getElementById('mapjs');
 // pegasus for loading json data in parallel with other scripts.
 // For testing, you may want to  create a testdata.json file, and
 // use that instead. Beware of aggressive caching by chrome.
-const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
+//const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
+const geojson = pegasus(mapjs.getAttribute('data-filename'));
+
 // const geojson = pegasus('/testdata.json');
 
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
