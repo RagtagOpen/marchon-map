@@ -2,7 +2,9 @@ const mapjs = document.getElementById('mapjs');
 // pegasus for loading json data in parallel with other scripts.
 // For testing, you may want to  create a testdata.json file, and
 // use that instead. Beware of aggressive caching by chrome.
-const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
+//const geojson = pegasus('https://s3.amazonaws.com/ragtag-marchon/' + mapjs.getAttribute('data-filename'));
+const geojson = pegasus(mapjs.getAttribute('data-filename'));
+
 // const geojson = pegasus('/testdata.json');
 
 const countries = mapjs.getAttribute('data-countries') || 'us,ca';
@@ -134,7 +136,7 @@ const app = new Vue({
             const eventDate = moment(feature.properties.eventDate, 'MM/DD/YYYY');
             const now = moment().subtract(1, 'days');
             const pastEvent = eventDate.isBefore(now);
-            return !pastEvent;
+            return !pastEvent && feature.properties.flagship === undefined;
           }),
         };
         const familySepEventsPast = {
@@ -144,9 +146,18 @@ const app = new Vue({
             const eventDate = moment(feature.properties.eventDate, 'MM/DD/YYYY');
             const now = moment().subtract(1, 'days');
             const pastEvent = eventDate.isBefore(now);
-            return !feature.properties.source && !feature.properties.affiliate;
+            return !feature.properties.source && !feature.properties.affiliate && feature.properties.flagship === undefined;
           }),
         };
+
+        const marchonpollsFlagshipEvents = {
+          type: 'FeatureCollection',
+          features: _.filter(features, function(feature) { return feature.properties.flagship !== undefined && feature.properties.flagship === 'Yes'; }),
+        }
+        const marchonpollsEvents = {
+          type: 'FeatureCollection',
+          features: _.filter(features, function(feature) { return feature.properties.flagship !== undefined && feature.properties.flagship != 'Yes'; }),
+        }
 
         if (document.getElementById('affiliate')) {
           document.getElementById('affiliate').style.display = 'block';
@@ -200,6 +211,27 @@ const app = new Vue({
             layerId: 'marchon-family-sep-events',
             label: 'Family Separation Events',
             icon: 'star-blue.svg',
+            initiallyChecked: true,
+          });
+        }
+
+        if (marchonpollsFlagshipEvents.features.length) {
+          _this.map.addSource('marchopolls-flaghsip-events-geojson', { type: 'geojson', data: marchonpollsFlagshipEvents });
+          _this.addLayer('marchonpolls-flagship-events', 'marchopolls-flaghsip-events-geojson', { 'icon-image': 'star-pink' });
+          _this.mapLayers.push({
+            layerId: 'marchonpolls-flagship-events',
+            label: 'MarchOn Polls Flagship Events',
+            icon: 'star-pink.svg',
+            initiallyChecked: true,
+          });
+        }
+        if (marchonpollsEvents.features.length) {
+          _this.map.addSource('marchopolls-events-geojson', { type: 'geojson', data: marchonpollsEvents });
+          _this.addLayer('marchonpolls-events', 'marchopolls-events-geojson', { 'icon-image': 'star-black' });
+          _this.mapLayers.push({
+            layerId: 'marchonpolls-events',
+            label: 'MarchOn Polls Events',
+            icon: 'star-black.svg',
             initiallyChecked: true,
           });
         }
