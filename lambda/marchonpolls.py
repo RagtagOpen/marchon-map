@@ -139,11 +139,16 @@ def get_geodata(sheet, keys, location_fields, countries=None):
         row = sheet[key]
         location = ','.join(
             map(lambda f: row['properties'][f].strip(), location_fields))
-        location = row['properties'].get('address') + ", " + location
         resp = geocoder.forward(
-            location, limit=1, types=['place', 'address'])
+            row['properties'].get('address') + ", " + location, limit=1, types=['place', 'address'])
         response = resp.geojson()
         features = response.get('features')
+
+        if not features or features[0]['relevance'] < 0.75:
+            resp = geocoder.forward(
+                location, limit=1, types=['place', 'address'])
+            response = resp.geojson()
+            features = response.get('features')
 
         if not features or location.strip().lower() == 'address':
             if key in sheet:
