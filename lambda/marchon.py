@@ -63,11 +63,9 @@ def get_event_data():
     9 Twitter 10 Insta
     '''
     # keep these fields
-    # @RobinColodzin 12.9.2018 - Issue #49 Find out more link missing: field name in json is event Link, not motpLink
-    #       Leaving the motpLink as well, adding eventLink
     fields = {'name': 0, 'eventDate': 1, 'eventLink': 2, 'location': 3, 'host': 4,
               'affiliate': 5, 'contactName': 6, 'contactEmail': 7, 'facebook': 8,
-              'twitter': 9, 'instagram': 10, 'motpLink': 12, 'eventLink': 12}
+              'twitter': 9, 'instagram': 10, 'motpLink': 12}
     sheet = read_sheet('Sheet1!A1:M', fields, 3, False)
 
     # add default name
