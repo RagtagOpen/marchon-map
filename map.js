@@ -82,6 +82,12 @@ const app = new Vue({
     document.getElementById('mapApp').style.display = 'block';
     const _this = this;
 
+	//@RobinColodzin 12.9.2018 - If we are on the events page, only use the pink star
+	var isEventsPage = false;
+	if (typeof document.body.classList != "undefined" && document.body.classList.length > 0 && document.body.classList.contains("events")) {
+		isEventsPage = true;
+	}
+
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/march-on/cj9nq97bw3oco2snohkuh423m',
@@ -171,67 +177,81 @@ const app = new Vue({
           [_.max(lng), _.max(lat)], // ne
         ], { padding: 10 });
 
+		var defaultIcon = 'star-15-red';
+
         // add the map layers to the map, and also to the vue mapLayers
         // data. Not currently using initiallyChecked.
         if (affiliateFalse.features.length) {
+  		  var icon = defaultIcon;
+  		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
-          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': 'star-15-red' });
+          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-false',
             label: 'Non Affiliates',
-            icon: 'star-15-red.svg',
+            icon: iconImg,
             initiallyChecked: true,
           });
         }
         if (affiliateTrue.features.length) {
+		  var icon = (isEventsPage ? defaultIcon : 'smallstar');
+		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
-          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': 'smallstar' });
+          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-true',
             label: 'Affiliates',
-            icon: 'smallstar.svg',
+            icon: iconImg,
             initiallyChecked: true,
           });
         }
         // familySepEvents
         if (familySepEventsPast.features.length) {
+  		  var icon = 'star-gray-light';
+		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-family-sep-events-past-geojson', { type: 'geojson', data: familySepEventsPast });
-          _this.addLayer('marchon-family-sep-events-past', 'marchon-family-sep-events-past-geojson', { 'icon-image': 'star-gray-light' });
+          _this.addLayer('marchon-family-sep-events-past', 'marchon-family-sep-events-past-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
             layerId: 'marchon-family-sep-events-past',
             label: 'Family Separation Events (Past)',
-            icon: 'star-gray-light.svg',
+            icon: iconImg,
             initiallyChecked: true,
           });
         }
         if (familySepEventsFuture.features.length) {
+    	  var icon = 'star-blue';
+		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-family-sep-events-future-geojson', { type: 'geojson', data: familySepEventsFuture });
-          _this.addLayer('marchon-family-sep-events-future', 'marchon-family-sep-events-future-geojson', { 'icon-image': 'star-blue' });
+          _this.addLayer('marchon-family-sep-events-future', 'marchon-family-sep-events-future-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
             layerId: 'marchon-family-sep-events',
             label: 'Family Separation Events',
-            icon: 'star-blue.svg',
+            icon: iconImg,
             initiallyChecked: true,
           });
         }
 
         if (marchonpollsFlagshipEvents.features.length) {
+      	  var icon = 'star-pink';
+		  var iconImg = icon + ".svg";
           _this.map.addSource('marchopolls-flaghsip-events-geojson', { type: 'geojson', data: marchonpollsFlagshipEvents });
-          _this.addLayer('marchonpolls-flagship-events', 'marchopolls-flaghsip-events-geojson', { 'icon-image': 'star-pink' });
+          _this.addLayer('marchonpolls-flagship-events', 'marchopolls-flaghsip-events-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
             layerId: 'marchonpolls-flagship-events',
             label: 'MarchOn Polls Flagship Events',
-            icon: 'star-pink.svg',
+            icon: iconImg,
             initiallyChecked: true,
           });
         }
         if (marchonpollsEvents.features.length) {
+      	  var icon = 'star-black';
+		  var iconImg = icon + ".svg";
           _this.map.addSource('marchopolls-events-geojson', { type: 'geojson', data: marchonpollsEvents });
-          _this.addLayer('marchonpolls-events', 'marchopolls-events-geojson', { 'icon-image': 'star-black' });
+          _this.addLayer('marchonpolls-events', 'marchopolls-events-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
             layerId: 'marchonpolls-events',
             label: 'MarchOn Polls Events',
-            icon: 'star-black.svg',
+            icon: iconImg,
             initiallyChecked: true,
           });
         }

@@ -31,8 +31,8 @@
                 </div>
               </div>
               <div class="info pull-left">
-                <div v-if="activeGroup.motpLink" class="event-link">
-                  <a :href="activeGroup.motpLink" target="_blank">Find out more</a>
+                <div v-if="activeGroup.eventLink" class="event-link">
+                  <a :href="activeGroup.eventLink" target="_blank">Find out more</a>
                 </div>
                 <div v-if="activeGroup.host" class="hosted-by">
                   Hosted by: {{activeGroup.host}}
@@ -75,7 +75,7 @@
       <i class="fa fa-circle"></i>
     </div>
     <script type="text/x-template" id="layerfilter-template">
-      <div class="map-widget filter-widget">
+      <div class="map-widget filter-widget" style="display:none!important;">
         <template v-for="layer in layers">
           <div>
             <input
