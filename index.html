@@ -25,10 +25,7 @@
             <div class="card-detail">
               <h3>{{activeGroup.name}}</h3>
               <div class="info pull-left">
-                <div v-if="activeGroup.eventLink" class="event-link">
-                  <a :href="activeGroup.eventLink" target="_blank">Find out more</a>
-                </div>
-                <div v-else-if="activeGroup.motpLink" class="event-link">
+                <div v-if="activeGroup.motpLink" class="event-link">
                   <a :href="activeGroup.motpLink" target="_blank">Find out more</a>
                 </div>
                 <div v-if="activeGroup.host" class="hosted-by">
