@@ -207,7 +207,7 @@ const app = new Vue({
         }
         // familySepEvents
         if (familySepEventsPast.features.length) {
-  		  var icon = (isEventsPage ? defaultIcon : 'star-gray-light');
+  		  var icon = 'star-gray-light';
 		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-family-sep-events-past-geojson', { type: 'geojson', data: familySepEventsPast });
           _this.addLayer('marchon-family-sep-events-past', 'marchon-family-sep-events-past-geojson', { 'icon-image': icon });
@@ -219,7 +219,7 @@ const app = new Vue({
           });
         }
         if (familySepEventsFuture.features.length) {
-    	  var icon = (isEventsPage ? defaultIcon : 'star-blue');
+    	  var icon = 'star-blue';
 		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-family-sep-events-future-geojson', { type: 'geojson', data: familySepEventsFuture });
           _this.addLayer('marchon-family-sep-events-future', 'marchon-family-sep-events-future-geojson', { 'icon-image': icon });
@@ -232,7 +232,7 @@ const app = new Vue({
         }
 
         if (marchonpollsFlagshipEvents.features.length) {
-      	  var icon = (isEventsPage ? defaultIcon : 'star-pink');
+      	  var icon = 'star-pink';
 		  var iconImg = icon + ".svg";
           _this.map.addSource('marchopolls-flaghsip-events-geojson', { type: 'geojson', data: marchonpollsFlagshipEvents });
           _this.addLayer('marchonpolls-flagship-events', 'marchopolls-flaghsip-events-geojson', { 'icon-image': icon });
@@ -244,7 +244,7 @@ const app = new Vue({
           });
         }
         if (marchonpollsEvents.features.length) {
-      	  var icon = (isEventsPage ? defaultIcon : 'star-black');
+      	  var icon = 'star-black';
 		  var iconImg = icon + ".svg";
           _this.map.addSource('marchopolls-events-geojson', { type: 'geojson', data: marchonpollsEvents });
           _this.addLayer('marchonpolls-events', 'marchopolls-events-geojson', { 'icon-image': icon });
