@@ -84,9 +84,11 @@ const app = new Vue({
 
 	//@RobinColodzin 12.9.2018 - If we are on the events page, only use the pink star
 	var isEventsPage = false;
+	/*
 	if (typeof document.body.classList != "undefined" && document.body.classList.length > 0 && document.body.classList.contains("events")) {
 		isEventsPage = true;
 	}
+	*/
 
     this.map = new mapboxgl.Map({
       container: 'map',
@@ -194,7 +196,8 @@ const app = new Vue({
           });
         }
         if (affiliateTrue.features.length) {
-		  var icon = (isEventsPage ? defaultIcon : 'smallstar');
+  		  //var icon = (isEventsPage ? defaultIcon : 'smallstar');
+		  var icon = 'smallstar';
 		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
           _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon });
