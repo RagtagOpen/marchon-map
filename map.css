@@ -155,6 +155,10 @@ nice to get that cleaned up. - Marion Newlevant */
   bottom: 2px;
 }
 
+.filter-widget label {
+  margin-bottom: 0px;
+}
+
 /* inspired by https://www.sitepoint.com/create-calendar-icon-html5-css3/ */
 time.icon
 {

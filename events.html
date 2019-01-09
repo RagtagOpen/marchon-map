@@ -78,7 +78,7 @@
       <div class="map-widget filter-widget">
         <template v-for="layer in layers">
           <div>
-            <label for="layer.layerId"><img :src="'assets/'+layer.icon">{{layer.label}}</label>
+            <label v-if="layer.labelVisible == true" for="layer.layerId"><img :src="'assets/'+layer.icon">{{layer.label}}</label>
           </div>
         </template>
       </div>
