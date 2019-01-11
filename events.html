@@ -75,17 +75,10 @@
       <i class="fa fa-circle"></i>
     </div>
     <script type="text/x-template" id="layerfilter-template">
-      <div class="map-widget filter-widget" style="display:none!important;">
+      <div class="map-widget filter-widget">
         <template v-for="layer in layers">
           <div>
-            <input
-              type="checkbox"
-              :value="layer.layerId"
-              :id="layer.layerId"
-              v-model="checkedLayers"
-              @change="showHideLayers()"
-            >
-            <label for="layer.layerId"><img :src="'assets/'+layer.icon">{{layer.label}}</label>
+            <label v-if="layer.labelVisible == true" for="layer.layerId"><img :src="'assets/'+layer.icon">{{layer.label}}</label>
           </div>
         </template>
       </div>

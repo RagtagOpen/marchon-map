@@ -84,9 +84,11 @@ const app = new Vue({
 
 	//@RobinColodzin 12.9.2018 - If we are on the events page, only use the pink star
 	var isEventsPage = false;
+	/*
 	if (typeof document.body.classList != "undefined" && document.body.classList.length > 0 && document.body.classList.contains("events")) {
 		isEventsPage = true;
 	}
+	*/
 
     this.map = new mapboxgl.Map({
       container: 'map',
@@ -128,11 +130,11 @@ const app = new Vue({
         // sort out our features into what will be our map layers
         const affiliateTrue = {
           type: 'FeatureCollection',
-          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && feature.properties.affiliate && feature.properties.affiliate != "No"; }),
         };
         const affiliateFalse = {
           type: 'FeatureCollection',
-          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && !feature.properties.affiliate; }),
+          features: _.filter(features, function(feature) { return feature.properties.source === 'events' && (!feature.properties.affiliate || feature.properties.affiliate === "No"); }),
         };
         // familySepEvents: June 30 2018
         const familySepEventsFuture = {
@@ -191,18 +193,21 @@ const app = new Vue({
             label: 'Non Affiliates',
             icon: iconImg,
             initiallyChecked: true,
+            labelVisible: false,
           });
         }
         if (affiliateTrue.features.length) {
-		  var icon = (isEventsPage ? defaultIcon : 'smallstar');
+  		  //var icon = (isEventsPage ? defaultIcon : 'smallstar');
+		  var icon = 'smallstar';
 		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
           _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-true',
-            label: 'Affiliates',
+            label: 'March On Affiliates',
             icon: iconImg,
             initiallyChecked: true,
+            labelVisible: true,
           });
         }
         // familySepEvents
@@ -455,7 +460,9 @@ const app = new Vue({
     showFeature: function showFeature(feature) {
       const props = feature.properties;
 
-      props.mailto = 'mailto:' + props.contactEmail;
+      if (props.contactEmail) {
+        props.mailto = 'mailto:' + props.contactEmail;
+      }
       if (props.eventDate) {
         props.eventMeta = _.find(this.events, function(ev) {
           return ev.location === props.location;
