@@ -281,6 +281,7 @@ const app = new Vue({
     // Looks like this code is pretty much deactivated. I'm leaving it alone for now.
     futureFeatures: function futureFeatures() {
       // const now = moment().subtract(28, 'days'); // recently passed dates are still 'current' (adjust this number to keep more/less past events)
+      const this_year = moment('2019-01-01', 'YYYY-MM-DD');
       const ff = this.features.map(function(feature) {
         const props = feature.properties;
 
@@ -288,11 +289,9 @@ const app = new Vue({
           return null;
         }
         const dt = moment(feature.properties.eventDate, 'MM/DD/YYYY');
-        /*
-        if (dt.isBefore(now)) {
+        if (dt.isBefore(this_year)) {
           return null;
         }
-        */
 
         return feature;
       });
