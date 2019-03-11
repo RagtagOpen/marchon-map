@@ -84,6 +84,12 @@ const app = new Vue({
 
 	//@RobinColodzin 12.9.2018 - If we are on the events page, only use the pink star
 	var isEventsPage = false;
+  var isClimatePage = false;
+  if (typeof document.body.classList != "undefined" && document.body.classList.length > 0) {
+    if (document.body.classList.contains("climate")) {
+      isClimatePage = true;
+    }
+  }
 	/*
 	if (typeof document.body.classList != "undefined" && document.body.classList.length > 0 && document.body.classList.contains("events")) {
 		isEventsPage = true;
@@ -184,7 +190,7 @@ const app = new Vue({
         // add the map layers to the map, and also to the vue mapLayers
         // data. Not currently using initiallyChecked.
         if (affiliateFalse.features.length) {
-  		  var icon = defaultIcon;
+  		  var icon = (isClimatePage ? 'Maki-marker-15-green' : defaultIcon);
   		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
           _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': icon });
@@ -198,8 +204,8 @@ const app = new Vue({
         }
         if (affiliateTrue.features.length) {
   		  //var icon = (isEventsPage ? defaultIcon : 'smallstar');
-		  var icon = 'smallstar';
-		  var iconImg = icon + ".svg";
+        var icon = (isClimatePage ? 'Maki-marker-15-green' : 'smallstar');
+   		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
           _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon });
           _this.mapLayers.push({
@@ -390,7 +396,16 @@ const app = new Vue({
         return;
       }
 
+      var isClimatePage = false;
+      if (typeof document.body.classList != "undefined" && document.body.classList.length > 0) {
+        if (document.body.classList.contains("climate")) {
+          isClimatePage = true;
+        }
+      }
+
       const el = control[0];
+      if (isClimatePage) { el.className += " climate";}
+
 
       if (this.activeGroup) {
         el.className = el.className.replace('highlight', '');
@@ -405,6 +420,7 @@ const app = new Vue({
 
         el.className += ' highlight';
         arrow.className = 'arrow-marker';
+        if (isClimatePage) { arrow.className += " climate";}
         arrow.id = 'arrowMarker';
         arrow.innerHTML = '<i class="fa fa-chevron-left"></i>';
         el.insertBefore(arrow, el.childNodes[0]);

@@ -129,8 +129,16 @@ h3 {
   margin-right: 5px;
 }
 
+.arrow-marker.climate{
+  color: #2AA4D4;
+}
+
 .mapboxgl-ctrl-geocoder.highlight {
   border: 3px solid #EE354E;
+}
+
+.mapboxgl-ctrl-geocoder.highlight.climate {
+  border: 3px solid #2AA4D4;
 }
 
 .mapboxgl-ctrl-geocoder.highlight input[type='text'] {
@@ -144,6 +152,10 @@ nice to get that cleaned up. - Marion Newlevant */
   border: 3px solid #EE354E;
   padding: 1rem;
   background-color: white;
+}
+
+.map-widget.climate {
+  border: 3px solid #2AA4D4;
 }
 
 /* the little images in the filter widget */
