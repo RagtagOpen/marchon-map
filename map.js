@@ -192,9 +192,10 @@ const app = new Vue({
         if (affiliateFalse.features.length) {
   		  var icon = (isClimatePage ? 'Maki-marker-15-green' : defaultIcon);
         var iconSize = (isClimatePage ? 1.333 : 1);
+        var iconOffset = (isClimatePage? [0,-10] : [0,0]);
   		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
-          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': icon, 'icon-size': iconSize });
+          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': icon, 'icon-size': iconSize, 'icon-offset': iconOffset });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-false',
             label: 'Non Affiliates',
@@ -207,9 +208,10 @@ const app = new Vue({
   		  //var icon = (isEventsPage ? defaultIcon : 'smallstar');
         var icon = (isClimatePage ? 'Maki-marker-15-green' : 'smallstar');
         var iconSize = (isClimatePage ? 1.333 : 1);
+        var iconOffset = (isClimatePage? [0,-10] : [0,0]);
    		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
-          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon, 'icon-size': iconSize });
+          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon, 'icon-size': iconSize, 'icon-offset': iconOffset });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-true',
             label: 'March On Affiliates',
