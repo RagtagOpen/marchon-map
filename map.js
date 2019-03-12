@@ -12,6 +12,13 @@ mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
 const monthLookup = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+var isClimatePage = false;
+if (typeof document.body.classList != "undefined" && document.body.classList.length > 0) {
+  if (document.body.classList.contains("climate")) {
+    isClimatePage = true;
+  }
+}
+
 // for the layer filter, we have a vue component, which is managing
 // a mapbox control which we define (https://www.mapbox.com/mapbox-gl-js/api/#icontrol)
 
@@ -184,10 +191,12 @@ const app = new Vue({
         // add the map layers to the map, and also to the vue mapLayers
         // data. Not currently using initiallyChecked.
         if (affiliateFalse.features.length) {
-  		  var icon = defaultIcon;
+  		  var icon = (isClimatePage ? 'Maki-marker-15-green' : defaultIcon);
+        var iconSize = (isClimatePage ? 1.333 : 1);
+        var iconOffset = (isClimatePage? [0,-10] : [0,0]);
   		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-false-geojson', { type: 'geojson', data: affiliateFalse });
-          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': icon });
+          _this.addLayer('marchon-affiliate-false', 'marchon-affiliate-false-geojson', { 'icon-image': icon, 'icon-size': iconSize, 'icon-offset': iconOffset });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-false',
             label: 'Non Affiliates',
@@ -198,10 +207,12 @@ const app = new Vue({
         }
         if (affiliateTrue.features.length) {
   		  //var icon = (isEventsPage ? defaultIcon : 'smallstar');
-		  var icon = 'smallstar';
-		  var iconImg = icon + ".svg";
+        var icon = (isClimatePage ? 'Maki-marker-15-green' : 'smallstar');
+        var iconSize = (isClimatePage ? 1.333 : 1);
+        var iconOffset = (isClimatePage? [0,-10] : [0,0]);
+   		  var iconImg = icon + ".svg";
           _this.map.addSource('marchon-affiliate-true-geojson', { type: 'geojson', data: affiliateTrue });
-          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon });
+          _this.addLayer('marchon-affiliate-true', 'marchon-affiliate-true-geojson', { 'icon-image': icon, 'icon-size': iconSize, 'icon-offset': iconOffset });
           _this.mapLayers.push({
             layerId: 'marchon-affiliate-true',
             label: 'March On Affiliates',
@@ -391,6 +402,8 @@ const app = new Vue({
       }
 
       const el = control[0];
+      if (isClimatePage) { el.className += " climate";}
+
 
       if (this.activeGroup) {
         el.className = el.className.replace('highlight', '');
@@ -405,6 +418,7 @@ const app = new Vue({
 
         el.className += ' highlight';
         arrow.className = 'arrow-marker';
+        if (isClimatePage) { arrow.className += " climate";}
         arrow.id = 'arrowMarker';
         arrow.innerHTML = '<i class="fa fa-chevron-left"></i>';
         el.insertBefore(arrow, el.childNodes[0]);
@@ -417,10 +431,11 @@ const app = new Vue({
       if (!this.features.length) {
         return;
       }
+
       const loc = this.userLocation;
       const withDistance = this.features.map(function(feature) {
         const coords = feature.geometry.coordinates;
-        const distance = _this.distance(loc.latitude, loc.longitude, coords[1], coords[0]);
+        const distance = (! isClimatePage || (typeof feature.properties.source != "undefined" && feature.properties.source != "actionnetwork") ? _this.distance(loc.latitude, loc.longitude, coords[1], coords[0]) : 100000);
 
         return {
           feature: feature,
