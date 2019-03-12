@@ -12,6 +12,13 @@ mapboxgl.accessToken = mapjs.getAttribute('data-token');
 
 const monthLookup = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+var isClimatePage = false;
+if (typeof document.body.classList != "undefined" && document.body.classList.length > 0) {
+  if (document.body.classList.contains("climate")) {
+    isClimatePage = true;
+  }
+}
+
 // for the layer filter, we have a vue component, which is managing
 // a mapbox control which we define (https://www.mapbox.com/mapbox-gl-js/api/#icontrol)
 
@@ -84,12 +91,6 @@ const app = new Vue({
 
 	//@RobinColodzin 12.9.2018 - If we are on the events page, only use the pink star
 	var isEventsPage = false;
-  var isClimatePage = false;
-  if (typeof document.body.classList != "undefined" && document.body.classList.length > 0) {
-    if (document.body.classList.contains("climate")) {
-      isClimatePage = true;
-    }
-  }
 	/*
 	if (typeof document.body.classList != "undefined" && document.body.classList.length > 0 && document.body.classList.contains("events")) {
 		isEventsPage = true;
@@ -400,13 +401,6 @@ const app = new Vue({
         return;
       }
 
-      var isClimatePage = false;
-      if (typeof document.body.classList != "undefined" && document.body.classList.length > 0) {
-        if (document.body.classList.contains("climate")) {
-          isClimatePage = true;
-        }
-      }
-
       const el = control[0];
       if (isClimatePage) { el.className += " climate";}
 
@@ -441,7 +435,7 @@ const app = new Vue({
       const loc = this.userLocation;
       const withDistance = this.features.map(function(feature) {
         const coords = feature.geometry.coordinates;
-        const distance = (typeof feature.properties.source != "undefined" && feature.properties.source != "actionnetwork" ? _this.distance(loc.latitude, loc.longitude, coords[1], coords[0]) : 100000);
+        const distance = (! isClimatePage || (typeof feature.properties.source != "undefined" && feature.properties.source != "actionnetwork") ? _this.distance(loc.latitude, loc.longitude, coords[1], coords[0]) : 100000);
 
         return {
           feature: feature,
