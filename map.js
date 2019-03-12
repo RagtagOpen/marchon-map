@@ -437,10 +437,11 @@ const app = new Vue({
       if (!this.features.length) {
         return;
       }
+
       const loc = this.userLocation;
       const withDistance = this.features.map(function(feature) {
         const coords = feature.geometry.coordinates;
-        const distance = _this.distance(loc.latitude, loc.longitude, coords[1], coords[0]);
+        const distance = (typeof feature.properties.source != "undefined" && feature.properties.source != "actionnetwork" ? _this.distance(loc.latitude, loc.longitude, coords[1], coords[0]) : 100000);
 
         return {
           feature: feature,
